@@ -1,0 +1,4 @@
+/* Menu Page Styles */
+.space-y-3 > View + View {
+  margin-top: 12px;
+}
