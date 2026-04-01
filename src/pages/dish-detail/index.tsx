@@ -1,6 +1,6 @@
 import { View, Text, Image, ScrollView, Input } from '@tarojs/components'
 import Taro, { useLoad, useRouter } from '@tarojs/taro'
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import { Network } from '@/network'
 import './index.css'
 
@@ -59,8 +59,7 @@ const DishDetailPage = () => {
       })
       console.log('Dish detail response:', res.data)
       if (res.data && res.data.data) {
-        const dishData = res.data.data
-        setDish(dishData)
+        setDish(res.data.data)
       }
     } catch (error) {
       console.error('获取菜品详情失败:', error)
@@ -68,36 +67,6 @@ const DishDetailPage = () => {
       setLoading(false)
     }
   }
-
-  const handleSelectSpec = useCallback((specName: string, optionName: string) => {
-    console.log('选择规格:', specName, optionName)
-    setSelectedSpecs(prev => ({
-      ...prev,
-      [specName]: optionName
-    }))
-  }, [])
-
-  const handleSelectSpiciness = useCallback((value: string) => {
-    console.log('选择辣度:', value)
-    setSelectedSpiciness(value)
-  }, [])
-
-  const handleSelectTemperature = useCallback((value: string) => {
-    console.log('选择温度:', value)
-    setSelectedTemperature(value)
-  }, [])
-
-  const handleDecreaseQuantity = useCallback(() => {
-    if (quantity > 1) {
-      setQuantity(quantity - 1)
-    }
-  }, [quantity])
-
-  const handleIncreaseQuantity = useCallback(() => {
-    if (dish && quantity < dish.stock) {
-      setQuantity(quantity + 1)
-    }
-  }, [quantity, dish])
 
   const getSpicinessOptions = () => [
     { value: 'none', label: '不辣' },
@@ -109,14 +78,13 @@ const DishDetailPage = () => {
   const getTemperatureOptions = () => [
     { value: 'hot', label: '热' },
     { value: 'normal', label: '常温' },
-    { value: 'cold', 'label': '冰' }
+    { value: 'cold', label: '冰' }
   ]
 
   const calculateTotalPrice = () => {
     if (!dish) return 0
     let total = dish.price
     
-    // 加上规格差价
     if (dish.specifications && Array.isArray(dish.specifications)) {
       dish.specifications.forEach((spec) => {
         const selected = selectedSpecs[spec.name]
@@ -132,8 +100,7 @@ const DishDetailPage = () => {
     return total * quantity
   }
 
-  // 点击加入购物车，先弹出留言框
-  const handleShowNoteModal = async () => {
+  const handleAddToCart = () => {
     if (!dish) return
     
     // 检查必选规格
@@ -146,23 +113,19 @@ const DishDetailPage = () => {
       }
     }
     
-    // 弹出留言输入框
     setShowNoteModal(true)
   }
 
-  // 取消留言，直接加入购物车
   const handleSkipNote = () => {
     setShowNoteModal(false)
     submitToCart('')
   }
 
-  // 确认留言并加入购物车
   const handleConfirmNote = () => {
     setShowNoteModal(false)
     submitToCart(note.trim())
   }
 
-  // 提交到购物车
   const submitToCart = async (noteText: string) => {
     if (!dish) return
 
@@ -196,8 +159,6 @@ const DishDetailPage = () => {
       Taro.showToast({ title: '加入购物车失败', icon: 'none' })
     }
   }
-
-  const handleAddToCart = handleShowNoteModal
 
   if (loading) {
     return (
@@ -246,45 +207,46 @@ const DishDetailPage = () => {
                 <Text className="text-xs text-orange-600">{dish.cuisine_type}</Text>
               </View>
             )}
-            {dish.cooking_method && (
-              <View className="bg-blue-100 px-2 py-0.5 rounded">
-                <Text className="text-xs text-blue-600">{dish.cooking_method}</Text>
-              </View>
-            )}
           </View>
-
-          <View className="flex items-center justify-between">
-            <Text className="text-2xl font-bold text-orange-500">¥{dish.price}</Text>
-          </View>
-
+          <Text className="text-2xl font-bold text-orange-500">¥{dish.price}</Text>
           {dish.description && (
             <Text className="text-sm text-gray-600 leading-relaxed mt-3">{dish.description}</Text>
           )}
         </View>
 
-        {/* 规格选择 */}
+        {/* 规格选择 - 使用更简单直接的方式 */}
         {hasSpecifications && dish.specifications!.map((spec, specIndex) => (
-          <View key={specIndex} className="bg-white p-4 mb-2">
-            <View className="flex items-center gap-2 mb-3">
-              <Text className="text-base font-semibold text-gray-900">{spec.name}</Text>
-              {spec.isRequired && (
-                <View className="bg-red-100 px-2 py-0.5 rounded">
-                  <Text className="text-xs text-red-600">必选</Text>
-                </View>
-              )}
-            </View>
-            <View className="flex flex-wrap gap-2">
+          <View key={`spec-${specIndex}`} className="bg-white p-4 mb-2">
+            <Text className="text-base font-semibold text-gray-900 mb-3">{spec.name}</Text>
+            <View className="flex flex-wrap gap-3">
               {spec.options.map((option, optIndex) => {
                 const isSelected = selectedSpecs[spec.name] === option.name
                 return (
                   <View
-                    key={optIndex}
-                    className={`px-4 py-2 rounded-lg border-2 ${
-                      isSelected ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white'
-                    }`}
-                    onClick={() => handleSelectSpec(spec.name, option.name)}
+                    key={`opt-${optIndex}`}
+                    hoverClass="bg-gray-100"
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: 8,
+                      borderWidth: 2,
+                      borderStyle: 'solid',
+                      borderColor: isSelected ? '#f97316' : '#e5e7eb',
+                      backgroundColor: isSelected ? '#fff7ed' : '#fff'
+                    }}
+                    onClick={() => {
+                      console.log('点击规格:', spec.name, option.name)
+                      setSelectedSpecs({
+                        ...selectedSpecs,
+                        [spec.name]: option.name
+                      })
+                    }}
                   >
-                    <Text className={`text-sm ${isSelected ? 'text-orange-600 font-medium' : 'text-gray-700'}`}>
+                    <Text style={{
+                      fontSize: 14,
+                      color: isSelected ? '#ea580c' : '#374151',
+                      fontWeight: isSelected ? '600' : '400'
+                    }}
+                    >
                       {option.name}{option.price > 0 ? ` +¥${option.price}` : ''}
                     </Text>
                   </View>
@@ -298,18 +260,32 @@ const DishDetailPage = () => {
         {dish.spiciness && (
           <View className="bg-white p-4 mb-2">
             <Text className="text-base font-semibold text-gray-900 mb-3">辣度</Text>
-            <View className="flex flex-wrap gap-2">
-              {spicinessOptions.map((option) => {
+            <View className="flex flex-wrap gap-3">
+              {spicinessOptions.map((option, idx) => {
                 const isSelected = selectedSpiciness === option.value
                 return (
                   <View
-                    key={option.value}
-                    className={`px-4 py-2 rounded-lg border-2 ${
-                      isSelected ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white'
-                    }`}
-                    onClick={() => handleSelectSpiciness(option.value)}
+                    key={`spice-${idx}`}
+                    hoverClass="bg-gray-100"
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: 8,
+                      borderWidth: 2,
+                      borderStyle: 'solid',
+                      borderColor: isSelected ? '#f97316' : '#e5e7eb',
+                      backgroundColor: isSelected ? '#fff7ed' : '#fff'
+                    }}
+                    onClick={() => {
+                      console.log('点击辣度:', option.value)
+                      setSelectedSpiciness(option.value)
+                    }}
                   >
-                    <Text className={`text-sm ${isSelected ? 'text-orange-600 font-medium' : 'text-gray-700'}`}>
+                    <Text style={{
+                      fontSize: 14,
+                      color: isSelected ? '#ea580c' : '#374151',
+                      fontWeight: isSelected ? '600' : '400'
+                    }}
+                    >
                       {option.label}
                     </Text>
                   </View>
@@ -323,18 +299,32 @@ const DishDetailPage = () => {
         {dish.temperature && (
           <View className="bg-white p-4 mb-2">
             <Text className="text-base font-semibold text-gray-900 mb-3">温度</Text>
-            <View className="flex flex-wrap gap-2">
-              {temperatureOptions.map((option) => {
+            <View className="flex flex-wrap gap-3">
+              {temperatureOptions.map((option, idx) => {
                 const isSelected = selectedTemperature === option.value
                 return (
                   <View
-                    key={option.value}
-                    className={`px-4 py-2 rounded-lg border-2 ${
-                      isSelected ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white'
-                    }`}
-                    onClick={() => handleSelectTemperature(option.value)}
+                    key={`temp-${idx}`}
+                    hoverClass="bg-gray-100"
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: 8,
+                      borderWidth: 2,
+                      borderStyle: 'solid',
+                      borderColor: isSelected ? '#f97316' : '#e5e7eb',
+                      backgroundColor: isSelected ? '#fff7ed' : '#fff'
+                    }}
+                    onClick={() => {
+                      console.log('点击温度:', option.value)
+                      setSelectedTemperature(option.value)
+                    }}
                   >
-                    <Text className={`text-sm ${isSelected ? 'text-orange-600 font-medium' : 'text-gray-700'}`}>
+                    <Text style={{
+                      fontSize: 14,
+                      color: isSelected ? '#ea580c' : '#374151',
+                      fontWeight: isSelected ? '600' : '400'
+                    }}
+                    >
                       {option.label}
                     </Text>
                   </View>
@@ -350,28 +340,46 @@ const DishDetailPage = () => {
             <Text className="text-base font-semibold text-gray-900">数量</Text>
             <View className="flex items-center gap-4">
               <View
-                className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  quantity > 1 ? 'bg-orange-100' : 'bg-gray-100'
-                }`}
-                onClick={handleDecreaseQuantity}
+                hoverClass="bg-gray-200"
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: quantity > 1 ? '#ffedd5' : '#f3f4f6',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                onClick={() => {
+                  if (quantity > 1) setQuantity(quantity - 1)
+                }}
               >
-                <Text className={quantity > 1 ? 'text-orange-600' : 'text-gray-400'}>-</Text>
+                <Text style={{ color: quantity > 1 ? '#ea580c' : '#9ca3af', fontSize: 18 }}>-</Text>
               </View>
-              <Text className="text-lg font-semibold text-gray-900 w-8 text-center">{quantity}</Text>
+              <Text className="text-lg font-semibold text-gray-900">{quantity}</Text>
               <View
-                className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  quantity < dish.stock ? 'bg-orange-100' : 'bg-gray-100'
-                }`}
-                onClick={handleIncreaseQuantity}
+                hoverClass="bg-gray-200"
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: quantity < dish.stock ? '#ffedd5' : '#f3f4f6',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                onClick={() => {
+                  if (quantity < dish.stock) setQuantity(quantity + 1)
+                }}
               >
-                <Text className={quantity < dish.stock ? 'text-orange-600' : 'text-gray-400'}>+</Text>
+                <Text style={{ color: quantity < dish.stock ? '#ea580c' : '#9ca3af', fontSize: 18 }}>+</Text>
               </View>
             </View>
           </View>
           <Text className="text-xs text-gray-400 mt-2">库存: {dish.stock}份</Text>
         </View>
 
-        <View className="h-24" />
+        <View style={{ height: 100 }} />
       </ScrollView>
 
       {/* 底部操作栏 */}
@@ -394,6 +402,7 @@ const DishDetailPage = () => {
             <Text className="text-2xl font-bold text-orange-500">¥{calculateTotalPrice()}</Text>
           </View>
           <View
+            hoverClass="opacity-80"
             style={{ backgroundColor: '#f97316', borderRadius: 8, paddingTop: 12, paddingBottom: 12, paddingLeft: 32, paddingRight: 32 }}
             onClick={handleAddToCart}
           >
@@ -423,9 +432,9 @@ const DishDetailPage = () => {
               backgroundColor: '#fff',
               borderRadius: 12,
               padding: 20,
-              margin: 20,
-              width: '85%',
-              maxWidth: 320
+              marginLeft: 20,
+              marginRight: 20,
+              width: '85%'
             }}
           >
             <Text style={{ fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginBottom: 16 }}>添加留言</Text>
@@ -441,12 +450,14 @@ const DishDetailPage = () => {
             </View>
             <View style={{ display: 'flex', flexDirection: 'row', gap: 12 }}>
               <View 
+                hoverClass="bg-gray-200"
                 style={{ flex: 1, backgroundColor: '#f5f5f5', borderRadius: 8, padding: 12 }}
                 onClick={handleSkipNote}
               >
                 <Text style={{ textAlign: 'center', color: '#666' }}>跳过</Text>
               </View>
               <View 
+                hoverClass="opacity-80"
                 style={{ flex: 1, backgroundColor: '#f97316', borderRadius: 8, padding: 12 }}
                 onClick={handleConfirmNote}
               >
