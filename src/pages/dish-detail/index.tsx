@@ -209,24 +209,28 @@ const DishDetailPage = () => {
           <View className="bg-white p-4 mb-2">
             <Text className="block text-base font-semibold text-gray-900 mb-3">辣度</Text>
             <View className="flex flex-wrap gap-2">
-              {getSpicinessOptions().map((option) => (
-                <View
-                  key={option.value}
-                  onClick={() => setSelectedSpiciness(option.value)}
-                  className={`px-4 py-2 rounded-lg border-2 ${
-                    selectedSpiciness === option.value
-                      ? 'border-orange-500 bg-orange-50'
-                      : 'border-gray-200'
-                  }`}
-                >
-                  <Text className={`text-sm ${
-                    selectedSpiciness === option.value ? 'text-orange-600' : 'text-gray-700'
-                  }`}
+              {getSpicinessOptions().map((option) => {
+                const isSelected = selectedSpiciness === option.value
+                return (
+                  <View
+                    key={option.value}
+                    className={`px-4 py-2 rounded-lg border-2 ${
+                      isSelected
+                        ? 'border-orange-500 bg-orange-50'
+                        : 'border-gray-200 bg-white'
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      console.log('选择辣度:', option.value)
+                      setSelectedSpiciness(option.value)
+                    }}
                   >
-                    {option.label}
-                  </Text>
-                </View>
-              ))}
+                    <Text className={`text-sm ${isSelected ? 'text-orange-600 font-medium' : 'text-gray-700'}`}>
+                      {option.label}
+                    </Text>
+                  </View>
+                )
+              })}
             </View>
           </View>
         )}
@@ -236,24 +240,28 @@ const DishDetailPage = () => {
           <View className="bg-white p-4 mb-2">
             <Text className="block text-base font-semibold text-gray-900 mb-3">温度</Text>
             <View className="flex flex-wrap gap-2">
-              {getTemperatureOptions().map((option) => (
-                <View
-                  key={option.value}
-                  onClick={() => setSelectedTemperature(option.value)}
-                  className={`px-4 py-2 rounded-lg border-2 ${
-                    selectedTemperature === option.value
-                      ? 'border-orange-500 bg-orange-50'
-                      : 'border-gray-200'
-                  }`}
-                >
-                  <Text className={`text-sm ${
-                    selectedTemperature === option.value ? 'text-orange-600' : 'text-gray-700'
-                  }`}
+              {getTemperatureOptions().map((option) => {
+                const isSelected = selectedTemperature === option.value
+                return (
+                  <View
+                    key={option.value}
+                    className={`px-4 py-2 rounded-lg border-2 ${
+                      isSelected
+                        ? 'border-orange-500 bg-orange-50'
+                        : 'border-gray-200 bg-white'
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      console.log('选择温度:', option.value)
+                      setSelectedTemperature(option.value)
+                    }}
                   >
-                    {option.label}
-                  </Text>
-                </View>
-              ))}
+                    <Text className={`text-sm ${isSelected ? 'text-orange-600 font-medium' : 'text-gray-700'}`}>
+                      {option.label}
+                    </Text>
+                  </View>
+                )
+              })}
             </View>
           </View>
         )}
@@ -261,40 +269,44 @@ const DishDetailPage = () => {
         {/* 规格选择 */}
         {dish.specifications && Array.isArray(dish.specifications) && dish.specifications.length > 0 && (
           <View className="bg-white p-4 mb-2">
-            {dish.specifications.map((spec: Spec) => (
-              <View key={spec.name} className="mb-4 last:mb-0">
+            {dish.specifications.map((spec: Spec, specIndex: number) => (
+              <View key={specIndex} className="mb-4 last:mb-0">
                 <View className="flex items-center gap-2 mb-3">
                   <Text className="block text-base font-semibold text-gray-900">
                     {spec.name}
                   </Text>
                   {spec.isRequired && (
-                    <View className="bg-red-100 text-red-600 px-2 py-0.5 rounded text-xs">
-                      <Text className="text-xs">必选</Text>
+                    <View className="bg-red-100 px-2 py-0.5 rounded">
+                      <Text className="text-xs text-red-600">必选</Text>
                     </View>
                   )}
                 </View>
                 <View className="flex flex-wrap gap-2">
-                  {spec.options.map((option) => (
-                    <View
-                      key={option.name}
-                      onClick={() => setSelectedSpecs({
-                        ...selectedSpecs,
-                        [spec.name]: option.name
-                      })}
-                      className={`px-4 py-2 rounded-lg border-2 ${
-                        selectedSpecs[spec.name] === option.name
-                          ? 'border-orange-500 bg-orange-50'
-                          : 'border-gray-200'
-                      }`}
-                    >
-                      <Text className={`text-sm ${
-                        selectedSpecs[spec.name] === option.name ? 'text-orange-600' : 'text-gray-700'
-                      }`}
+                  {spec.options.map((option, optIndex: number) => {
+                    const isSelected = selectedSpecs[spec.name] === option.name
+                    return (
+                      <View
+                        key={optIndex}
+                        className={`px-4 py-2 rounded-lg border-2 ${
+                          isSelected
+                            ? 'border-orange-500 bg-orange-50'
+                            : 'border-gray-200 bg-white'
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          console.log('选择规格:', spec.name, option.name)
+                          setSelectedSpecs({
+                            ...selectedSpecs,
+                            [spec.name]: option.name
+                          })
+                        }}
                       >
-                        {option.name} {option.price > 0 && `+¥${option.price}`}
-                      </Text>
-                    </View>
-                  ))}
+                        <Text className={`text-sm ${isSelected ? 'text-orange-600 font-medium' : 'text-gray-700'}`}>
+                          {option.name} {option.price > 0 ? `+¥${option.price}` : ''}
+                        </Text>
+                      </View>
+                    )
+                  })}
                 </View>
               </View>
             ))}

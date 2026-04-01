@@ -4,6 +4,12 @@ import { useState } from 'react'
 import { Network } from '@/network'
 import './index.css'
 
+interface Spec {
+  name: string
+  isRequired: boolean
+  options: Array<{ name: string; price: number }>
+}
+
 interface Dish {
   id: string
   name: string
@@ -33,9 +39,13 @@ export default function DishManagePage() {
     description: '',
     stock: '999',
     spiciness: 'none',
-    temperature: 'normal',
+    temperature: 'hot',
     isNew: false
   })
+  const [specs, setSpecs] = useState<Spec[]>([])
+  const [newSpecName, setNewSpecName] = useState('')
+  const [newSpecRequired, setNewSpecRequired] = useState(true)
+  const [optionInputs, setOptionInputs] = useState<Record<number, { name: string; price: string }>>({})
 
   const categories = ['热菜', '凉菜', '主食', '汤品', '饮品', '甜点']
   const cuisines = ['', '川菜', '粤菜', '湘菜', '鲁菜', '苏菜', '浙菜', '闽菜', '徽菜', '家常菜']
@@ -81,13 +91,11 @@ export default function DishManagePage() {
       setUploading(true)
       Taro.showLoading({ title: '上传中...' })
 
-      // 读取文件内容
       const fileManager = Taro.getFileSystemManager()
       const fileInfo = fileManager.readFileSync(tempFilePath)
       const base64 = Taro.arrayBufferToBase64(fileInfo as ArrayBuffer)
       const fileName = tempFilePath.split('/').pop() || 'image.jpg'
 
-      // 上传到服务器
       const uploadRes = await Network.request({
         url: '/api/upload/image',
         method: 'POST',
@@ -114,6 +122,49 @@ export default function DishManagePage() {
     }
   }
 
+  // 添加规格项
+  const addSpec = () => {
+    if (!newSpecName.trim()) {
+      Taro.showToast({ title: '请输入规格名称', icon: 'none' })
+      return
+    }
+    setSpecs([...specs, {
+      name: newSpecName.trim(),
+      isRequired: newSpecRequired,
+      options: []
+    }])
+    setNewSpecName('')
+    setNewSpecRequired(true)
+  }
+
+  // 删除规格项
+  const removeSpec = (index: number) => {
+    setSpecs(specs.filter((_, i) => i !== index))
+  }
+
+  // 添加规格选项
+  const addSpecOption = (specIndex: number) => {
+    const input = optionInputs[specIndex]
+    if (!input || !input.name.trim()) {
+      Taro.showToast({ title: '请输入选项名称', icon: 'none' })
+      return
+    }
+    const newSpecs = [...specs]
+    newSpecs[specIndex].options.push({
+      name: input.name.trim(),
+      price: parseFloat(input.price) || 0
+    })
+    setSpecs(newSpecs)
+    setOptionInputs({ ...optionInputs, [specIndex]: { name: '', price: '' } })
+  }
+
+  // 删除规格选项
+  const removeSpecOption = (specIndex: number, optionIndex: number) => {
+    const newSpecs = [...specs]
+    newSpecs[specIndex].options = newSpecs[specIndex].options.filter((_, i) => i !== optionIndex)
+    setSpecs(newSpecs)
+  }
+
   const handleSubmit = async () => {
     if (!formData.name.trim()) {
       Taro.showToast({ title: '请输入菜品名称', icon: 'none' })
@@ -138,7 +189,8 @@ export default function DishManagePage() {
         stock: parseInt(formData.stock) || 999,
         spiciness: formData.spiciness,
         temperature: formData.temperature,
-        isNew: formData.isNew
+        isNew: formData.isNew,
+        specifications: specs.length > 0 ? specs : undefined
       }
 
       console.log('提交菜品数据:', dishData)
@@ -207,9 +259,10 @@ export default function DishManagePage() {
       description: '',
       stock: '999',
       spiciness: 'none',
-      temperature: 'normal',
+      temperature: 'hot',
       isNew: false
     })
+    setSpecs([])
     setShowForm(false)
   }
 
@@ -399,6 +452,92 @@ export default function DishManagePage() {
               </View>
             </View>
 
+            {/* 规格设置 */}
+            <View className="mb-4">
+              <Text className="block text-sm font-medium text-gray-700 mb-2">规格设置</Text>
+              <View className="bg-gray-50 rounded-lg p-3">
+                {/* 已添加的规格列表 */}
+                {specs.map((spec, specIndex) => (
+                  <View key={specIndex} className="bg-white rounded-lg p-3 mb-2">
+                    <View className="flex items-center justify-between mb-2">
+                      <View className="flex items-center gap-2">
+                        <Text className="font-medium text-gray-900">{spec.name}</Text>
+                        {spec.isRequired && (
+                          <View className="bg-red-100 px-1 py-0.5 rounded">
+                            <Text className="text-xs text-red-600">必选</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text className="text-red-500 text-sm" onClick={() => removeSpec(specIndex)}>删除</Text>
+                    </View>
+                    {/* 规格选项 */}
+                    <View className="flex flex-wrap gap-2">
+                      {spec.options.map((opt, optIndex) => (
+                        <View key={optIndex} className="bg-gray-100 px-2 py-1 rounded flex items-center gap-1">
+                          <Text className="text-sm text-gray-700">{opt.name}</Text>
+                          {opt.price > 0 && <Text className="text-xs text-orange-500">+¥{opt.price}</Text>}
+                          <Text className="text-gray-400 text-xs ml-1" onClick={() => removeSpecOption(specIndex, optIndex)}>×</Text>
+                        </View>
+                      ))}
+                    </View>
+                    {/* 添加选项 */}
+                    <View className="flex gap-2 mt-2">
+                      <View className="flex-1 bg-gray-50 rounded px-2 py-1">
+                        <Input
+                          className="w-full text-sm"
+                          placeholder="选项名"
+                          value={optionInputs[specIndex]?.name || ''}
+                          onInput={(e) => setOptionInputs({
+                            ...optionInputs,
+                            [specIndex]: { ...(optionInputs[specIndex] || { name: '', price: '' }), name: e.detail.value }
+                          })}
+                        />
+                      </View>
+                      <View className="w-16 bg-gray-50 rounded px-2 py-1">
+                        <Input
+                          className="w-full text-sm"
+                          type="digit"
+                          placeholder="加价"
+                          value={optionInputs[specIndex]?.price || ''}
+                          onInput={(e) => setOptionInputs({
+                            ...optionInputs,
+                            [specIndex]: { ...(optionInputs[specIndex] || { name: '', price: '' }), price: e.detail.value }
+                          })}
+                        />
+                      </View>
+                      <View
+                        className="bg-orange-500 px-2 py-1 rounded"
+                        onClick={() => addSpecOption(specIndex)}
+                      >
+                        <Text className="text-white text-sm">添加</Text>
+                      </View>
+                    </View>
+                  </View>
+                ))}
+
+                {/* 添加新规格 */}
+                <View className="flex gap-2 items-center">
+                  <View className="flex-1 bg-white rounded px-3 py-2">
+                    <Input
+                      className="w-full text-sm"
+                      placeholder="规格名称（如：份量、口味）"
+                      value={newSpecName}
+                      onInput={(e) => setNewSpecName(e.detail.value)}
+                    />
+                  </View>
+                  <View className="flex items-center gap-1" onClick={() => setNewSpecRequired(!newSpecRequired)}>
+                    <View className={`w-4 h-4 rounded border ${newSpecRequired ? 'bg-orange-500 border-orange-500' : 'border-gray-300'}`}>
+                      {newSpecRequired && <Text className="text-white text-xs text-center">✓</Text>}
+                    </View>
+                    <Text className="text-xs text-gray-600">必选</Text>
+                  </View>
+                  <View className="bg-orange-500 px-3 py-2 rounded" onClick={addSpec}>
+                    <Text className="text-white text-sm">添加规格</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+
             {/* 是否新品 */}
             <View className="mb-4 flex items-center">
               <View
@@ -439,7 +578,9 @@ export default function DishManagePage() {
                   <View className="flex items-center">
                     <Text className="font-semibold text-gray-900">{dish.name}</Text>
                     {dish.is_new && (
-                      <Text className="ml-2 px-1 py-0.5 bg-orange-100 text-orange-600 text-xs rounded">新品</Text>
+                      <View className="ml-2 px-1 py-0.5 bg-orange-100 rounded">
+                        <Text className="text-orange-600 text-xs">新品</Text>
+                      </View>
                     )}
                   </View>
                   <Text className="text-sm text-gray-500 mt-1">
