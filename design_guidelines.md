@@ -2,9 +2,9 @@
 
 ## 品牌定位
 
-- **应用定位**：餐厅远程点餐与留言系统
+- **应用定位**：餐厅远程点餐与留言系统，支持精细化分类和社区互动
 - **设计风格**：简洁、清晰、易操作，符合餐饮行业特点
-- **目标用户**：餐厅顾客，需要快速浏览菜品、下单和留言
+- **目标用户**：餐厅顾客，需要快速浏览菜品、下单、留言和预约
 
 ## 配色方案
 
@@ -24,6 +24,7 @@
 - **成功**：`bg-green-500` / `text-green-500` - 订单完成
 - **警告**：`bg-yellow-500` / `text-yellow-500` - 订单待确认
 - **错误**：`bg-red-500` / `text-red-500` - 订单取消
+- **辣度**：`text-red-500` - 辣味标识
 
 ## 字体规范
 
@@ -41,93 +42,6 @@
 - **垂直间距**：`space-y-3`
 - **水平间距**：`space-x-3`
 
-## 组件规范
-
-### 按钮样式
-
-```tsx
-// 主按钮
-<View className="bg-orange-500 text-white rounded-lg py-3 px-6">
-  <Text className="block text-center font-semibold text-base">提交订单</Text>
-</View>
-
-// 次按钮
-<View className="bg-gray-100 text-gray-700 rounded-lg py-3 px-6">
-  <Text className="block text-center font-semibold text-base">取消</Text>
-</View>
-
-// 小按钮
-<View className="bg-orange-500 text-white rounded-lg py-2 px-4">
-  <Text className="block text-center font-semibold text-sm">加入购物车</Text>
-</View>
-```
-
-### 卡片/容器样式
-
-```tsx
-// 菜品卡片
-<View className="bg-white rounded-xl shadow-sm p-4 mb-3">
-  <View className="w-full h-32 bg-gray-100 rounded-lg mb-3">
-    <Image src={dish.image} className="w-full h-full rounded-lg" mode="aspectFill" />
-  </View>
-  <Text className="block text-base font-semibold text-gray-900 mb-1">{dish.name}</Text>
-  <Text className="block text-sm text-gray-500 mb-2">{dish.description}</Text>
-  <View className="flex justify-between items-center">
-    <Text className="text-lg font-bold text-orange-500">¥{dish.price}</Text>
-    <View className="bg-orange-500 text-white rounded-lg py-2 px-4">
-      <Text className="block text-center font-semibold text-sm">加入购物车</Text>
-    </View>
-  </View>
-</View>
-
-// 留言卡片
-<View className="bg-white rounded-xl shadow-sm p-4 mb-3">
-  <Text className="block text-base text-gray-900 mb-2">{message.content}</Text>
-  <Text className="block text-sm text-gray-400">{message.createdAt}</Text>
-</View>
-```
-
-### 输入框样式
-
-```tsx
-// 文本输入框
-<View className="bg-gray-50 rounded-xl px-4 py-3 mb-3">
-  <Input
-    className="w-full bg-transparent text-base"
-    placeholder="请输入内容"
-    placeholderClass="text-gray-400"
-  />
-</View>
-
-// 多行文本输入
-<View className="bg-gray-50 rounded-xl p-4 mb-4">
-  <Textarea
-    style={{ width: '100%', minHeight: '100px', backgroundColor: 'transparent' }}
-    placeholder="请输入留言内容..."
-    maxlength={500}
-  />
-</View>
-```
-
-### 空状态
-
-```tsx
-<View className="flex flex-col items-center justify-center py-12">
-  <View className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-    <Text className="text-3xl">📋</Text>
-  </View>
-  <Text className="block text-base text-gray-500">暂无留言</Text>
-</View>
-```
-
-### 加载状态
-
-```tsx
-<View className="flex flex-col items-center justify-center py-12">
-  <Text className="block text-base text-gray-500">加载中...</Text>
-</View>
-```
-
 ## 导航结构
 
 ### 页面配置
@@ -135,16 +49,26 @@
 使用 TabBar 导航，包含以下页面：
 
 1. **菜单页**（`pages/menu/index`）
-   - 展示菜品分类（热菜、凉菜、饮品、主食）
-   - 展示菜品列表
-   - 支持筛选和搜索
+   - 左侧分类栏（菜系、烹饪方式）
+   - 顶部新品轮播
+   - 右侧菜品列表
 
-2. **订单页**（`pages/orders/index`）
-   - 展示购物车
-   - 确认订单信息
-   - 提交订单
+2. **购物车页**（`pages/cart/index`）
+   - 购物车列表
+   - 数量修改
+   - 结算功能
 
-3. **留言页**（`pages/messages/index`）
+3. **我想吃页**（`pages/wishlist/index`）
+   - 添加想吃的菜品
+   - 投票功能
+   - 排行榜
+
+4. **预约页**（`pages/reservation/index`）
+   - 预约时间选择
+   - 联系方式
+   - 预约记录
+
+5. **留言页**（`pages/messages/index`）
    - 展示留言列表
    - 发表新留言
 
@@ -164,10 +88,22 @@ tabBar: {
       selectedIconPath: './assets/tabbar/menu-active.png',
     },
     {
-      pagePath: 'pages/orders/index',
-      text: '订单',
+      pagePath: 'pages/cart/index',
+      text: '购物车',
       iconPath: './assets/tabbar/shopping-cart.png',
       selectedIconPath: './assets/tabbar/shopping-cart-active.png',
+    },
+    {
+      pagePath: 'pages/wishlist/index',
+      text: '我想吃',
+      iconPath: './assets/tabbar/heart.png',
+      selectedIconPath: './assets/tabbar/heart-active.png',
+    },
+    {
+      pagePath: 'pages/reservation/index',
+      text: '预约',
+      iconPath: './assets/tabbar/calendar.png',
+      selectedIconPath: './assets/tabbar/calendar-active.png',
     },
     {
       pagePath: 'pages/messages/index',
@@ -178,6 +114,48 @@ tabBar: {
   ]
 }
 ```
+
+## 菜品分类系统
+
+### 菜系分类
+- 川菜：麻辣鲜香
+- 粤菜：清淡鲜美
+- 鲁菜：醇厚香浓
+- 苏菜：清淡甜美
+- 浙菜：鲜嫩脆爽
+- 闽菜：清鲜醇和
+- 湘菜：香辣浓郁
+- 徽菜：鲜香酥嫩
+- 家常菜：简单美味
+
+### 烹饪方式分类
+- 炖：文火慢炖
+- 烧：红烧焖烧
+- 煮：清煮白灼
+- 蒸：清蒸粉蒸
+- 炒：爆炒快炒
+- 炸：油炸煎炸
+- 烤：烘烤烧烤
+- 凉拌：清爽开胃
+
+## 菜品详情规范
+
+### 基本信息
+- **菜品图片**：多张图片支持，第一张为主图
+- **价格**：显示基础价格，规格影响最终价格
+- **库存**：显示剩余库存，不足时提示
+- **描述**：菜品特色、食材、口味介绍
+
+### 规格属性
+- **辣度**：不辣、微辣、中辣、特辣
+- **温度**：热、常温、冰
+- **规格**：
+  - 尺寸：小份、中份、大份
+  - 口味：原味、香辣、麻辣、酸甜等
+  - 配料：加蛋、加肉、加菜等
+
+### 价格计算
+- 基础价格 + 规格差价 = 最终价格
 
 ## 小程序约束
 

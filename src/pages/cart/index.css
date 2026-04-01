@@ -1,0 +1,7 @@
+/* Cart Page Styles */
+.space-y-3 > View + View {
+  margin-top: 12px;
+}
+.min-w-20 {
+  min-width: 20px;
+}

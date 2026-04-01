@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
 import { DishesService } from './dishes.service';
 
 @Controller('dishes')
@@ -12,6 +12,16 @@ export class DishesController {
       code: 200,
       msg: '获取菜品列表成功',
       data: dishes,
+    };
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    const dish = await this.dishesService.findOne(id);
+    return {
+      code: 200,
+      msg: '获取菜品详情成功',
+      data: dish,
     };
   }
 }
