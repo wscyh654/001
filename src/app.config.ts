@@ -3,7 +3,8 @@ export default defineAppConfig({
     'pages/menu/index',
     'pages/cart/index',
     'pages/orders/index',
-    'pages/messages/index'
+    'pages/messages/index',
+    'pages/dish-manage/index'
   ],
   window: {
     backgroundTextStyle: 'light',

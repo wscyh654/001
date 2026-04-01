@@ -94,6 +94,15 @@ const MenuPage = () => {
 
   return (
     <View className="flex flex-col h-full bg-gray-50">
+      {/* 顶部管理入口 */}
+      <View
+        className="bg-orange-500 px-4 py-2 flex items-center justify-between"
+        onClick={() => Taro.navigateTo({ url: '/pages/dish-manage/index' })}
+      >
+        <Text className="text-white text-sm">点击添加新菜品和管理菜品信息</Text>
+        <Text className="text-white text-lg">+</Text>
+      </View>
+
       {/* 顶部新品轮播 */}
       {newDishes.length > 0 && (
         <ScrollView scrollX className="bg-white mb-2">

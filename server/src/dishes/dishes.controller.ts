@@ -24,4 +24,62 @@ export class DishesController {
       data: dish,
     };
   }
+
+  @Post()
+  async create(@Body() createDishDto: {
+    name: string;
+    category: string;
+    cuisineType?: string;
+    cookingMethod?: string;
+    price: number;
+    image?: string;
+    images?: string[];
+    description?: string;
+    stock?: number;
+    spiciness?: string;
+    temperature?: string;
+    specifications?: any;
+    isNew?: boolean;
+  }) {
+    const dish = await this.dishesService.create(createDishDto);
+    return {
+      code: 200,
+      msg: '创建菜品成功',
+      data: dish,
+    };
+  }
+
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() updateDishDto: Partial<{
+    name: string;
+    category: string;
+    cuisineType: string;
+    cookingMethod: string;
+    price: number;
+    image: string;
+    images: string[];
+    description: string;
+    stock: number;
+    spiciness: string;
+    temperature: string;
+    specifications: any;
+    isNew: boolean;
+    isAvailable: boolean;
+  }>) {
+    const dish = await this.dishesService.update(id, updateDishDto);
+    return {
+      code: 200,
+      msg: '更新菜品成功',
+      data: dish,
+    };
+  }
+
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    await this.dishesService.remove(id);
+    return {
+      code: 200,
+      msg: '删除菜品成功',
+    };
+  }
 }
