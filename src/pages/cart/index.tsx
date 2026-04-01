@@ -11,6 +11,7 @@ interface CartItem {
   price: number
   quantity: number
   specs: Record<string, any>
+  note?: string
   created_at: string
 }
 
@@ -151,6 +152,11 @@ const CartPage = () => {
                     <Text className="block text-sm text-gray-500 mt-1">
                       {getSpecsText(item.specs)}
                     </Text>
+                    {item.note && (
+                      <View className="mt-1 bg-orange-50 px-2 py-1 rounded inline-block">
+                        <Text className="text-xs text-orange-600">留言: {item.note}</Text>
+                      </View>
+                    )}
                   </View>
                   <Text className="text-lg font-bold text-orange-500">
                     ¥{(item.price * item.quantity).toFixed(2)}

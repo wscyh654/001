@@ -184,6 +184,7 @@ export const carts = pgTable("carts", {
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   quantity: integer("quantity").notNull(),
   specs: jsonb("specs"),
+  note: text("note"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

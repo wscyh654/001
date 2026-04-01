@@ -28,10 +28,11 @@ export class CartService {
     price: number;
     quantity: number;
     specs?: any;
+    note?: string;
   }) {
     const client = getSupabaseClient();
 
-    // 检查是否已存在相同菜品和规格
+    // 检查是否已存在相同菜品和规格（不考虑留言）
     const { data: existingItems } = await client
       .from('carts')
       .select('*')
@@ -44,12 +45,13 @@ export class CartService {
         item => JSON.stringify(item.specs) === JSON.stringify(createCartDto.specs)
       );
 
-      if (existingItem) {
+      if (existingItem && !createCartDto.note) {
+        // 只有当没有留言时才合并
         return this.update(existingItem.id, existingItem.quantity + createCartDto.quantity);
       }
     }
 
-    // 否则创建新项
+    // 创建新项
     const { data, error } = await client
       .from('carts')
       .insert({
@@ -59,6 +61,7 @@ export class CartService {
         price: createCartDto.price,
         quantity: createCartDto.quantity,
         specs: createCartDto.specs || null,
+        note: createCartDto.note || null,
       })
       .select()
       .single();

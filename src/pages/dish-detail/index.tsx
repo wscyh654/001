@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView } from '@tarojs/components'
+import { View, Text, Image, ScrollView, Input } from '@tarojs/components'
 import Taro, { useLoad, useRouter } from '@tarojs/taro'
 import { useState, useCallback } from 'react'
 import { Network } from '@/network'
@@ -40,6 +40,8 @@ const DishDetailPage = () => {
   const [selectedSpecs, setSelectedSpecs] = useState<Record<string, string>>({})
   const [selectedSpiciness, setSelectedSpiciness] = useState<string>('')
   const [selectedTemperature, setSelectedTemperature] = useState<string>('')
+  const [showNoteModal, setShowNoteModal] = useState(false)
+  const [note, setNote] = useState('')
 
   useLoad(() => {
     const { id } = router.params
@@ -130,7 +132,8 @@ const DishDetailPage = () => {
     return total * quantity
   }
 
-  const handleAddToCart = async () => {
+  // 点击加入购物车，先弹出留言框
+  const handleShowNoteModal = async () => {
     if (!dish) return
     
     // 检查必选规格
@@ -142,6 +145,26 @@ const DishDetailPage = () => {
         }
       }
     }
+    
+    // 弹出留言输入框
+    setShowNoteModal(true)
+  }
+
+  // 取消留言，直接加入购物车
+  const handleSkipNote = () => {
+    setShowNoteModal(false)
+    submitToCart('')
+  }
+
+  // 确认留言并加入购物车
+  const handleConfirmNote = () => {
+    setShowNoteModal(false)
+    submitToCart(note.trim())
+  }
+
+  // 提交到购物车
+  const submitToCart = async (noteText: string) => {
+    if (!dish) return
 
     try {
       const res = await Network.request({
@@ -156,12 +179,14 @@ const DishDetailPage = () => {
             ...selectedSpecs,
             spiciness: selectedSpiciness,
             temperature: selectedTemperature
-          }
+          },
+          note: noteText || undefined
         }
       })
       
       if (res.data && res.data.code === 200) {
         Taro.showToast({ title: '已加入购物车', icon: 'success' })
+        setNote('')
         setTimeout(() => {
           Taro.navigateBack()
         }, 1500)
@@ -171,6 +196,8 @@ const DishDetailPage = () => {
       Taro.showToast({ title: '加入购物车失败', icon: 'none' })
     }
   }
+
+  const handleAddToCart = handleShowNoteModal
 
   if (loading) {
     return (
@@ -374,6 +401,61 @@ const DishDetailPage = () => {
           </View>
         </View>
       </View>
+
+      {/* 留言弹窗 */}
+      {showNoteModal && (
+        <View 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 200
+          }}
+        >
+          <View 
+            style={{
+              backgroundColor: '#fff',
+              borderRadius: 12,
+              padding: 20,
+              margin: 20,
+              width: '85%',
+              maxWidth: 320
+            }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginBottom: 16 }}>添加留言</Text>
+            <Text style={{ fontSize: 14, color: '#666', marginBottom: 12 }}>有什么特殊要求可以告诉我们（选填）</Text>
+            <View style={{ backgroundColor: '#f5f5f5', borderRadius: 8, padding: 12, marginBottom: 16 }}>
+              <Input
+                style={{ width: '100%', minHeight: 60 }}
+                placeholder="例如：少放辣椒、多加葱..."
+                value={note}
+                onInput={(e) => setNote(e.detail.value)}
+                maxlength={100}
+              />
+            </View>
+            <View style={{ display: 'flex', flexDirection: 'row', gap: 12 }}>
+              <View 
+                style={{ flex: 1, backgroundColor: '#f5f5f5', borderRadius: 8, padding: 12 }}
+                onClick={handleSkipNote}
+              >
+                <Text style={{ textAlign: 'center', color: '#666' }}>跳过</Text>
+              </View>
+              <View 
+                style={{ flex: 1, backgroundColor: '#f97316', borderRadius: 8, padding: 12 }}
+                onClick={handleConfirmNote}
+              >
+                <Text style={{ textAlign: 'center', color: '#fff', fontWeight: '600' }}>确认</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
     </View>
   )
 }

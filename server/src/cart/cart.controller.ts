@@ -22,6 +22,7 @@ export class CartController {
     price: number;
     quantity: number;
     specs?: any;
+    note?: string;
   }) {
     const item = await this.cartService.create(createCartDto);
     return {
