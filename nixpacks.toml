@@ -1,0 +1,10 @@
+[phases.setup]
+
+[phases.install]
+cmds = ["npm install -g pnpm", "pnpm install"]
+
+[phases.build]
+cmds = ["cd server && pnpm build"]
+
+[start]
+cmd = "cd server && node dist/main.js"

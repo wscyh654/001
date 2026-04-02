@@ -1,19 +1,8 @@
-# 后端服务部署配置
-
 [build]
-command = "cd server && pnpm install && pnpm build"
+command = "npm install -g pnpm && pnpm install && cd server && pnpm build"
 
 [deploy]
 command = "cd server && node dist/main.js"
-
-[[services]]
-internal_port = 3000
-protocol = "tcp"
-
-[[services.ports]]
-handlers = ["http"]
-port = 80
-
-[[services.ports]]
-handlers = ["tls", "http"]
-port = 443
+healthcheckPath = "/"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
