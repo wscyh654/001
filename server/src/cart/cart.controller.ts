@@ -33,8 +33,8 @@ export class CartController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() updateCartDto: { quantity: number }) {
-    const item = await this.cartService.update(id, updateCartDto.quantity);
+  async update(@Param('id') id: string, @Body() updateCartDto: { quantity?: number; note?: string | null }) {
+    const item = await this.cartService.update(id, updateCartDto.quantity, updateCartDto.note);
     return {
       code: 200,
       msg: '更新购物车成功',

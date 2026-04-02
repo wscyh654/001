@@ -74,11 +74,20 @@ export class CartService {
     return data;
   }
 
-  async update(id: string, quantity: number) {
+  async update(id: string, quantity?: number, note?: string | null) {
     const client = getSupabaseClient();
+    const updateData: any = {};
+    
+    if (quantity !== undefined) {
+      updateData.quantity = quantity;
+    }
+    if (note !== undefined) {
+      updateData.note = note;
+    }
+    
     const { data, error } = await client
       .from('carts')
-      .update({ quantity })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();

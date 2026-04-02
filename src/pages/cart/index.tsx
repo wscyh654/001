@@ -81,6 +81,24 @@ const CartPage = () => {
     }
   }
 
+  const handleDeleteNote = async (itemId: string) => {
+    try {
+      const res = await Network.request({
+        url: `/api/cart/${itemId}`,
+        method: 'PUT',
+        data: { note: null }
+      })
+      
+      if (res.data && res.data.code === 200) {
+        Taro.showToast({ title: '已删除留言', icon: 'success' })
+        fetchCartItems()
+      }
+    } catch (error) {
+      console.error('删除留言失败:', error)
+      Taro.showToast({ title: '删除失败', icon: 'none' })
+    }
+  }
+
   const calculateTotal = () => {
     return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
   }
@@ -220,8 +238,17 @@ const CartPage = () => {
                       {getSpecsText(item.specs)}
                     </Text>
                     {item.note && (
-                      <View style={{ marginTop: 4, backgroundColor: '#fff7ed', paddingLeft: 6, paddingRight: 6, paddingTop: 2, paddingBottom: 2, borderRadius: 4, alignSelf: 'flex-start' }}>
-                        <Text style={{ fontSize: 11, color: '#ea580c' }}>留言: {item.note}</Text>
+                      <View style={{ marginTop: 4, display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <View style={{ backgroundColor: '#fff7ed', paddingLeft: 6, paddingRight: 6, paddingTop: 2, paddingBottom: 2, borderRadius: 4 }}>
+                          <Text style={{ fontSize: 11, color: '#ea580c' }}>留言: {item.note}</Text>
+                        </View>
+                        <View
+                          hoverClass="opacity-70"
+                          onClick={() => handleDeleteNote(item.id)}
+                          style={{ padding: 2 }}
+                        >
+                          <Text style={{ fontSize: 12, color: '#ef4444' }}>✕</Text>
+                        </View>
                       </View>
                     )}
                   </View>

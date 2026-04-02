@@ -350,11 +350,6 @@ const MenuPage = () => {
                             <Text style={{ fontSize: 15, fontWeight: '600', color: '#111827' }} numberOfLines={1}>
                               {dish.name}
                             </Text>
-                            {dish.is_new && (
-                              <View style={{ backgroundColor: '#f97316', paddingLeft: 6, paddingRight: 6, paddingTop: 2, paddingBottom: 2, borderRadius: 4 }}>
-                                <Text style={{ fontSize: 11, color: '#fff' }}>新品</Text>
-                              </View>
-                            )}
                           </View>
                           {dish.description && (
                             <Text style={{ fontSize: 12, color: '#6b7280' }} numberOfLines={1}>
