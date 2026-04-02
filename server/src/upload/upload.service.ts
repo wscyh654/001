@@ -46,4 +46,25 @@ export class UploadService {
 
     return { key, url };
   }
+
+  async uploadBuffer(
+    buffer: Buffer,
+    originalName: string,
+    mimeType: string,
+  ) {
+    // 上传文件
+    const key = await this.storage.uploadFile({
+      fileContent: buffer,
+      fileName: `uploads/${Date.now()}_${originalName}`,
+      contentType: mimeType,
+    });
+
+    // 生成访问 URL（有效期 30 天）
+    const url = await this.storage.generatePresignedUrl({
+      key,
+      expireTime: 2592000,
+    });
+
+    return { key, url };
+  }
 }

@@ -115,17 +115,22 @@ const CartPage = () => {
       })
       
       if (res.data && res.data.code === 200) {
+        // 清空购物车
+        await Network.request({
+          url: '/api/cart',
+          method: 'DELETE'
+        })
+        
         Taro.showToast({ 
           title: '订单已提交，静候美味', 
           icon: 'success',
-          duration: 2000
+          duration: 1500
         })
-        setTableNumber('')
-        fetchCartItems()
-        // 跳转到订单页
+        
+        // 直接跳转到订单页
         setTimeout(() => {
           Taro.switchTab({ url: '/pages/orders/index' })
-        }, 1500)
+        }, 500)
       }
     } catch (error) {
       console.error('下单失败:', error)

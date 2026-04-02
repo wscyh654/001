@@ -50,4 +50,13 @@ export class CartController {
       msg: '删除购物车项成功',
     };
   }
+
+  @Delete()
+  async clearAll() {
+    await this.cartService.clearAll();
+    return {
+      code: 200,
+      msg: '清空购物车成功',
+    };
+  }
 }

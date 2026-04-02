@@ -103,4 +103,17 @@ export class CartService {
       throw new Error('删除购物车项失败');
     }
   }
+
+  async clearAll() {
+    const client = getSupabaseClient();
+    const { error } = await client
+      .from('carts')
+      .delete()
+      .eq('user_id', this.tempUserId);
+
+    if (error) {
+      console.error('Error clearing cart:', error);
+      throw new Error('清空购物车失败');
+    }
+  }
 }
