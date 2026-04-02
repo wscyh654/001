@@ -206,7 +206,18 @@ const CartPage = () => {
 
             {/* 备注输入 */}
             <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 12, marginBottom: 12, boxSizing: 'border-box' }}>
-              <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 8 }}>备注</Text>
+              <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>备注</Text>
+                {orderNote.trim() && (
+                  <View
+                    hoverClass="opacity-70"
+                    onClick={() => setOrderNote('')}
+                    style={{ paddingLeft: 8, paddingRight: 8, paddingTop: 4, paddingBottom: 4, backgroundColor: '#fef2f2', borderRadius: 12 }}
+                  >
+                    <Text style={{ fontSize: 12, color: '#ef4444' }}>清空</Text>
+                  </View>
+                )}
+              </View>
               <View style={{ backgroundColor: '#f9fafb', borderRadius: 8, paddingLeft: 12, paddingRight: 12, paddingTop: 10, paddingBottom: 10 }}>
                 <Textarea
                   style={{ width: '100%', backgroundColor: 'transparent', fontSize: 14, minHeight: 60 }}
