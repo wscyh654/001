@@ -2,7 +2,7 @@ import { View, Text, ScrollView, Input, Image } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { useState, useEffect } from 'react'
 import { Network } from '@/network'
-import { isAdmin, setAdminStatus, clearAdminStatus } from '@/utils/user'
+import { isAdmin, setAdminStatus, clearAdminStatus, getUserId } from '@/utils/user'
 import './index.css'
 
 interface Order {
@@ -21,6 +21,14 @@ interface OrderItem {
   price: number
 }
 
+interface Wish {
+  id: string
+  dish_name: string
+  description: string | null
+  vote_count: number
+  created_at: string
+}
+
 const ADMIN_PASSWORD = 'admin123' // 简单的管理员密码
 
 const ProfilePage = () => {
@@ -30,6 +38,12 @@ const ProfilePage = () => {
   const [showPasswordInput, setShowPasswordInput] = useState(false)
   const [password, setPassword] = useState('')
   const [qrCodeUrl, setQrCodeUrl] = useState('')
+  
+  // 我想吃相关状态
+  const [wishes, setWishes] = useState<Wish[]>([])
+  const [showAddWish, setShowAddWish] = useState(false)
+  const [newWishName, setNewWishName] = useState('')
+  const [newWishDesc, setNewWishDesc] = useState('')
 
   useDidShow(() => {
     // 检查是否已经是管理员
@@ -40,6 +54,7 @@ const ProfilePage = () => {
     } else {
       setLoading(false)
     }
+    fetchWishes()
   })
 
   useEffect(() => {
@@ -68,6 +83,20 @@ const ProfilePage = () => {
       console.error('获取订单失败:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchWishes = async () => {
+    try {
+      const res = await Network.request({
+        url: '/api/wish',
+        method: 'GET'
+      })
+      if (res.data && res.data.data) {
+        setWishes(res.data.data)
+      }
+    } catch (error) {
+      console.error('获取心愿列表失败:', error)
     }
   }
 
@@ -126,6 +155,78 @@ const ProfilePage = () => {
       }
     } catch (error) {
       console.error('删除订单失败:', error)
+      Taro.showToast({ title: '删除失败', icon: 'none' })
+    }
+  }
+
+
+
+  // 我想吃相关方法
+  const handleAddWish = async () => {
+    if (!newWishName.trim()) {
+      Taro.showToast({ title: '请输入菜品名称', icon: 'none' })
+      return
+    }
+
+    try {
+      const userId = getUserId()
+      const res = await Network.request({
+        url: '/api/wish',
+        method: 'POST',
+        data: {
+          dish_name: newWishName.trim(),
+          description: newWishDesc.trim() || null,
+          user_id: userId
+        }
+      })
+      if (res.data && res.data.code === 200) {
+        Taro.showToast({ title: '心愿已提交', icon: 'success' })
+        setNewWishName('')
+        setNewWishDesc('')
+        setShowAddWish(false)
+        fetchWishes()
+      }
+    } catch (error) {
+      console.error('提交心愿失败:', error)
+      Taro.showToast({ title: '提交失败', icon: 'none' })
+    }
+  }
+
+  const handleVoteWish = async (wishId: string) => {
+    try {
+      const userId = getUserId()
+      const res = await Network.request({
+        url: `/api/wish/${wishId}/vote`,
+        method: 'POST',
+        data: { user_id: userId }
+      })
+      if (res.data && res.data.code === 200) {
+        fetchWishes()
+      }
+    } catch (error) {
+      console.error('投票失败:', error)
+      Taro.showToast({ title: '投票失败', icon: 'none' })
+    }
+  }
+
+  const handleDeleteWish = async (wishId: string) => {
+    const result = await Taro.showModal({
+      title: '确认删除',
+      content: '确定要删除这个心愿吗？'
+    })
+    if (!result.confirm) return
+
+    try {
+      const res = await Network.request({
+        url: `/api/wish/${wishId}`,
+        method: 'DELETE'
+      })
+      if (res.data && res.data.code === 200) {
+        Taro.showToast({ title: '已删除', icon: 'success' })
+        fetchWishes()
+      }
+    } catch (error) {
+      console.error('删除心愿失败:', error)
       Taro.showToast({ title: '删除失败', icon: 'none' })
     }
   }
@@ -200,6 +301,99 @@ const ProfilePage = () => {
             <Text className="text-sm text-gray-500 mt-4">扫描二维码进入点餐页面</Text>
             <Text className="text-xs text-gray-400 mt-1">长按图片可保存</Text>
           </View>
+        </View>
+
+        {/* 我想吃板块 */}
+        <View className="bg-white mb-3">
+          <View className="px-4 py-3 border-b border-gray-100 flex flex-row justify-between items-center">
+            <Text className="text-sm font-semibold text-gray-900">我想吃</Text>
+            <View
+              className="bg-orange-500 rounded-full px-3 py-1"
+              onClick={() => setShowAddWish(true)}
+            >
+              <Text className="text-xs text-white">+ 许愿</Text>
+            </View>
+          </View>
+          
+          {/* 添加心愿表单 */}
+          {showAddWish && (
+            <View className="px-4 py-3 border-b border-gray-100 bg-orange-50">
+              <View className="mb-3">
+                <Text className="text-xs text-gray-600 mb-1">菜品名称</Text>
+                <View className="bg-white rounded-lg px-3 py-2">
+                  <Input
+                    className="w-full text-sm"
+                    placeholder="想吃什么菜？"
+                    value={newWishName}
+                    onInput={(e) => setNewWishName(e.detail.value)}
+                  />
+                </View>
+              </View>
+              <View className="mb-3">
+                <Text className="text-xs text-gray-600 mb-1">描述（选填）</Text>
+                <View className="bg-white rounded-lg px-3 py-2">
+                  <Input
+                    className="w-full text-sm"
+                    placeholder="说说你的想法..."
+                    value={newWishDesc}
+                    onInput={(e) => setNewWishDesc(e.detail.value)}
+                  />
+                </View>
+              </View>
+              <View className="flex flex-row gap-2">
+                <View
+                  className="flex-1 bg-gray-200 rounded-full py-2 items-center"
+                  onClick={() => { setShowAddWish(false); setNewWishName(''); setNewWishDesc('') }}
+                >
+                  <Text className="text-sm text-gray-600">取消</Text>
+                </View>
+                <View
+                  className="flex-1 bg-orange-500 rounded-full py-2 items-center"
+                  onClick={handleAddWish}
+                >
+                  <Text className="text-sm text-white font-semibold">提交</Text>
+                </View>
+              </View>
+            </View>
+          )}
+          
+          {/* 心愿列表 */}
+          {wishes.length === 0 ? (
+            <View className="py-6 items-center">
+              <Text className="text-3xl mb-2">💡</Text>
+              <Text className="text-sm text-gray-500">还没有人许愿，快来第一个许愿吧！</Text>
+            </View>
+          ) : (
+            <View>
+              {wishes.map((wish) => (
+                <View key={wish.id} className="px-4 py-3 border-b border-gray-50 flex flex-row items-center justify-between">
+                  <View className="flex-1 mr-3">
+                    <Text className="text-sm font-semibold text-gray-900">{wish.dish_name}</Text>
+                    {wish.description && (
+                      <Text className="text-xs text-gray-500 mt-1" numberOfLines={1}>{wish.description}</Text>
+                    )}
+                  </View>
+                  <View className="flex flex-row items-center gap-2">
+                    <View
+                      className="flex flex-row items-center gap-1 bg-orange-50 rounded-full px-3 py-1"
+                      onClick={() => handleVoteWish(wish.id)}
+                    >
+                      <Text className="text-sm">👍</Text>
+                      <Text className="text-sm text-orange-600 font-semibold">{wish.vote_count}</Text>
+                    </View>
+                    {isAdminMode && (
+                      <View
+                        className="px-2 py-1 rounded-full bg-red-50"
+                        onClick={() => handleDeleteWish(wish.id)}
+                      >
+                        <Text className="text-xs text-red-500">删除</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
 
         {/* 管理入口 */}
@@ -326,8 +520,10 @@ const ProfilePage = () => {
 
                   {/* 备注 */}
                   {order.note && (
-                    <View className="bg-orange-50 px-3 py-1.5 rounded-full mb-2 self-start">
-                      <Text className="text-xs text-orange-600">备注: {order.note}</Text>
+                    <View className="flex flex-row items-center gap-2 mb-2">
+                      <View className="bg-orange-50 px-3 py-1.5 rounded-full">
+                        <Text className="text-xs text-orange-600">备注: {order.note}</Text>
+                      </View>
                     </View>
                   )}
 
