@@ -508,14 +508,14 @@ const MenuPage = () => {
             onClick={() => Taro.switchTab({ url: '/pages/cart/index' })}
             style={{
               backgroundColor: '#f97316',
-              borderRadius: 20,
-              paddingLeft: 24,
-              paddingRight: 24,
+              borderRadius: 8,
+              paddingLeft: 32,
+              paddingRight: 32,
               paddingTop: 10,
               paddingBottom: 10
             }}
           >
-            <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>去结算</Text>
+            <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>去下单</Text>
           </View>
         </View>
       )}

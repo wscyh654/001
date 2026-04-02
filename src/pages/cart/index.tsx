@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Input } from '@tarojs/components'
+import { View, Text, ScrollView, Input, Textarea } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import { Network } from '@/network'
@@ -20,6 +20,7 @@ const CartPage = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(true)
   const [tableNumber, setTableNumber] = useState('')
+  const [orderNote, setOrderNote] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   useDidShow(() => {
@@ -104,6 +105,7 @@ const CartPage = () => {
         data: {
           table_number: parseInt(tableNumber),
           user_id: userId,
+          note: orderNote.trim() || null,
           items: cartItems.map(item => ({
             dishId: item.dish_id,
             dishName: item.dish_name,
@@ -180,6 +182,20 @@ const CartPage = () => {
                   value={tableNumber}
                   onInput={(e) => setTableNumber(e.detail.value)}
                   type="number"
+                />
+              </View>
+            </View>
+
+            {/* 备注输入 */}
+            <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 12, marginBottom: 12, boxSizing: 'border-box' }}>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 8 }}>备注</Text>
+              <View style={{ backgroundColor: '#f9fafb', borderRadius: 8, paddingLeft: 12, paddingRight: 12, paddingTop: 10, paddingBottom: 10 }}>
+                <Textarea
+                  style={{ width: '100%', backgroundColor: 'transparent', fontSize: 14, minHeight: 60 }}
+                  placeholder="请输入备注信息（选填），如：少油少盐、不要香菜等"
+                  value={orderNote}
+                  onInput={(e) => setOrderNote(e.detail.value)}
+                  maxlength={200}
                 />
               </View>
             </View>
@@ -286,7 +302,7 @@ const CartPage = () => {
             <View
               hoverClass="opacity-80"
               onClick={submitting ? undefined : handleCheckout}
-              style={{ backgroundColor: submitting ? '#d1d5db' : '#f97316', borderRadius: 8, paddingTop: 10, paddingBottom: 10, paddingLeft: 32, paddingRight: 32 }}
+              style={{ backgroundColor: submitting ? '#d1d5db' : '#f97316', borderRadius: 20, paddingTop: 10, paddingBottom: 10, paddingLeft: 32, paddingRight: 32 }}
             >
               <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>{submitting ? '下单中...' : '去下单'}</Text>
             </View>
