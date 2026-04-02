@@ -46,11 +46,21 @@ const COOKING_METHODS = [
   { key: '炒', label: '炒' },
 ]
 
+const STAPLE_FOODS = [
+  { key: 'all', label: '全部' },
+  { key: '米饭', label: '米饭' },
+  { key: '面条', label: '面条' },
+  { key: '馒头', label: '馒头' },
+  { key: '包子', label: '包子' },
+  { key: '饺子', label: '饺子' },
+]
+
 const MenuPage = () => {
   const [dishes, setDishes] = useState<Dish[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedCuisine, setSelectedCuisine] = useState('all')
   const [selectedMethod, setSelectedMethod] = useState('all')
+  const [selectedStaple, setSelectedStaple] = useState('all')
   const [cartItems, setCartItems] = useState<CartItem[]>([])
 
   useLoad(() => {
@@ -101,7 +111,8 @@ const MenuPage = () => {
   const filteredDishes = dishes.filter(dish => {
     const cuisineMatch = selectedCuisine === 'all' || dish.cuisine_type === selectedCuisine
     const methodMatch = selectedMethod === 'all' || dish.cooking_method === selectedMethod
-    return cuisineMatch && methodMatch && dish.is_available
+    const stapleMatch = selectedStaple === 'all' || dish.category === selectedStaple
+    return cuisineMatch && methodMatch && stapleMatch && dish.is_available
   })
 
   const getSpicinessLabel = (spiciness: string | null) => {
@@ -255,6 +266,34 @@ const MenuPage = () => {
                     fontSize: 13,
                     color: selectedMethod === item.key ? '#ea580c' : '#374151',
                     fontWeight: selectedMethod === item.key ? '600' : '400'
+                  }}
+                >
+                  {item.label}
+                </Text>
+              </View>
+            ))}
+
+            <Text style={{ fontSize: 11, fontWeight: '600', color: '#6b7280', paddingLeft: 12, paddingTop: 16, paddingBottom: 8 }}>主食</Text>
+            {STAPLE_FOODS.map((item) => (
+              <View
+                key={item.key}
+                onClick={() => setSelectedStaple(item.key)}
+                style={{
+                  paddingLeft: 12,
+                  paddingRight: 12,
+                  paddingTop: 12,
+                  paddingBottom: 12,
+                  backgroundColor: selectedStaple === item.key ? '#fff7ed' : '#fff',
+                  borderLeftWidth: 2,
+                  borderLeftColor: selectedStaple === item.key ? '#f97316' : 'transparent',
+                  borderLeftStyle: 'solid'
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 13,
+                    color: selectedStaple === item.key ? '#ea580c' : '#374151',
+                    fontWeight: selectedStaple === item.key ? '600' : '400'
                   }}
                 >
                   {item.label}

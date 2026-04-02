@@ -1,193 +1,176 @@
-import { View, Text, Input, ScrollView } from '@tarojs/components'
-import { useLoad } from '@tarojs/taro'
+import { View, Text, ScrollView } from '@tarojs/components'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import { Network } from '@/network'
 import './index.css'
 
-interface CartItem {
-  dishId: string
-  dishName: string
-  dishPrice: number
+interface OrderItem {
+  dish_name: string
   quantity: number
+  price: number
+}
+
+interface Order {
+  id: string
+  table_number: number
+  status: string
+  total_price: number
+  note: string | null
+  items: OrderItem[]
+  created_at: string
 }
 
 const OrdersPage = () => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([])
-  const [tableNumber, setTableNumber] = useState('')
-  const [note, setNote] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [orders, setOrders] = useState<Order[]>([])
+  const [loading, setLoading] = useState(true)
 
-  useLoad(() => {
-    const mockCart = [
-      { dishId: '1', dishName: '宫保鸡丁', dishPrice: 38, quantity: 2 },
-      { dishId: '2', dishName: '麻婆豆腐', dishPrice: 22, quantity: 1 }
-    ]
-    setCartItems(mockCart)
+  useDidShow(() => {
+    fetchOrders()
   })
 
-  const getTotalPrice = () => {
-    return cartItems.reduce((sum, item) => sum + item.dishPrice * item.quantity, 0)
-  }
-
-  const getTotalQuantity = () => {
-    return cartItems.reduce((sum, item) => sum + item.quantity, 0)
-  }
-
-  const handleSubmitOrder = async () => {
-    if (!tableNumber) {
-      console.log('请输入桌号')
-      return
-    }
-
-    if (cartItems.length === 0) {
-      console.log('购物车为空')
-      return
-    }
-
+  const fetchOrders = async () => {
     try {
       setLoading(true)
       const res = await Network.request({
         url: '/api/orders',
-        method: 'POST',
-        data: {
-          table_number: parseInt(tableNumber),
-          items: cartItems,
-          note: note
-        }
+        method: 'GET'
       })
-      console.log('Order response:', res.data)
-
+      console.log('Orders response:', res.data)
       if (res.data && res.data.data) {
-        console.log('订单创建成功:', res.data.data)
+        setOrders(res.data.data)
       }
     } catch (error) {
-      console.error('创建订单失败:', error)
+      console.error('获取订单失败:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  return (
-    <View style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#f9fafb', overflow: 'hidden' }}>
-      <ScrollView scrollY style={{ flex: 1, padding: 12 }}>
-        {/* 桌号输入 */}
-        <View style={{ backgroundColor: '#fff', borderRadius: 8, padding: 12, marginBottom: 12, boxSizing: 'border-box' }}>
-          <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827', marginBottom: 8 }}>桌号</Text>
-          <View style={{ backgroundColor: '#f9fafb', borderRadius: 8, paddingLeft: 12, paddingRight: 12, paddingTop: 8, paddingBottom: 8 }}>
-            <Input
-              style={{ width: '100%', backgroundColor: 'transparent', fontSize: 13 }}
-              placeholder="请输入桌号"
-              value={tableNumber}
-              onInput={(e) => setTableNumber(e.detail.value)}
-              placeholderClass="text-gray-400"
-              type="number"
-            />
-          </View>
-        </View>
+  const getStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      'pending': '待处理',
+      'preparing': '制作中',
+      'ready': '已出餐',
+      'completed': '已完成',
+      'cancelled': '已取消'
+    }
+    return labels[status] || status
+  }
 
-        {/* 购物车列表 */}
-        <View style={{ backgroundColor: '#fff', borderRadius: 8, padding: 12, marginBottom: 12, boxSizing: 'border-box' }}>
-          <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827', marginBottom: 8 }}>
-            购物车 ({getTotalQuantity()} 件)
-          </Text>
-          {cartItems.length === 0 ? (
-            <View style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: 24, paddingBottom: 24 }}>
-              <Text style={{ fontSize: 24, marginBottom: 8 }}>🛒</Text>
-              <Text style={{ fontSize: 13, color: '#6b7280' }}>购物车为空</Text>
+  const getStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      'pending': '#f59e0b',
+      'preparing': '#3b82f6',
+      'ready': '#10b981',
+      'completed': '#6b7280',
+      'cancelled': '#ef4444'
+    }
+    return colors[status] || '#6b7280'
+  }
+
+  const formatTime = (timeStr: string) => {
+    const date = new Date(timeStr)
+    const month = date.getMonth() + 1
+    const day = date.getDate()
+    const hour = date.getHours().toString().padStart(2, '0')
+    const minute = date.getMinutes().toString().padStart(2, '0')
+    return `${month}月${day}日 ${hour}:${minute}`
+  }
+
+  const handleAddMore = () => {
+    Taro.switchTab({ url: '/pages/menu/index' })
+  }
+
+  return (
+    <View className="flex flex-col h-full bg-gray-50">
+      <ScrollView scrollY className="flex-1 p-3">
+        {loading ? (
+          <View className="flex items-center justify-center py-12">
+            <Text className="text-gray-500">加载中...</Text>
+          </View>
+        ) : orders.length === 0 ? (
+          <View className="flex flex-col items-center justify-center py-12">
+            <Text className="text-4xl mb-3">📋</Text>
+            <Text className="text-gray-500 mb-4">暂无订单</Text>
+            <View
+              className="bg-orange-500 rounded-lg px-6 py-2"
+              onClick={handleAddMore}
+            >
+              <Text className="text-white font-semibold">去点菜</Text>
             </View>
-          ) : (
-            <View>
-              {cartItems.map((item, index) => (
-                <View
-                  key={item.dishId}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    paddingTop: 8,
-                    paddingBottom: 8,
-                    borderBottomWidth: index < cartItems.length - 1 ? 1 : 0,
-                    borderBottomColor: '#f3f4f6',
-                    borderBottomStyle: 'solid'
-                  }}
-                >
-                  <View style={{ flex: 1, marginRight: 8, minWidth: 0 }}>
-                    <Text style={{ fontSize: 13, fontWeight: '500', color: '#111827' }} numberOfLines={1}>
-                      {item.dishName}
+          </View>
+        ) : (
+          <View>
+            {orders.map((order) => (
+              <View key={order.id} className="bg-white rounded-xl p-3 mb-3">
+                {/* 订单头部 */}
+                <View className="flex flex-row justify-between items-center mb-3">
+                  <View className="flex flex-row items-center gap-2">
+                    <Text className="text-base font-bold text-gray-900">
+                      桌号: {order.table_number}
                     </Text>
-                    <Text style={{ fontSize: 11, color: '#6b7280' }}>
-                      ¥{item.dishPrice} × {item.quantity}
-                    </Text>
+                    <View 
+                      className="px-2 py-0.5 rounded"
+                      style={{ backgroundColor: `${getStatusColor(order.status)}20` }}
+                    >
+                      <Text 
+                        className="text-xs font-medium"
+                        style={{ color: getStatusColor(order.status) }}
+                      >
+                        {getStatusLabel(order.status)}
+                      </Text>
+                    </View>
                   </View>
-                  <Text style={{ fontSize: 13, fontWeight: '700', color: '#f97316', flexShrink: 0 }}>
-                    ¥{item.dishPrice * item.quantity}
+                  <Text className="text-xs text-gray-400">
+                    {formatTime(order.created_at)}
                   </Text>
                 </View>
-              ))}
-            </View>
-          )}
-        </View>
 
-        {/* 备注 */}
-        <View style={{ backgroundColor: '#fff', borderRadius: 8, padding: 12, marginBottom: 12, boxSizing: 'border-box' }}>
-          <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827', marginBottom: 8 }}>备注</Text>
-          <View style={{ backgroundColor: '#f9fafb', borderRadius: 8, padding: 12 }}>
-            <Input
-              style={{ width: '100%', backgroundColor: 'transparent', fontSize: 13 }}
-              placeholder="请输入备注信息（可选）"
-              value={note}
-              onInput={(e) => setNote(e.detail.value)}
-              placeholderClass="text-gray-400"
-              maxlength={200}
-            />
-          </View>
-        </View>
+                {/* 订单商品 */}
+                <View className="border-t border-gray-100 pt-3">
+                  {order.items.map((item, idx) => (
+                    <View key={idx} className="flex flex-row justify-between items-center py-1">
+                      <Text className="text-sm text-gray-700">
+                        {item.dish_name} × {item.quantity}
+                      </Text>
+                      <Text className="text-sm text-gray-500">
+                        ¥{item.price * item.quantity}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
 
-        {/* 总价 */}
-        {cartItems.length > 0 && (
-          <View style={{ backgroundColor: '#fff', borderRadius: 8, padding: 12, marginBottom: 64, boxSizing: 'border-box' }}>
-            <View style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827' }}>合计</Text>
-              <Text style={{ fontSize: 18, fontWeight: '700', color: '#f97316' }}>¥{getTotalPrice()}</Text>
-            </View>
+                {/* 备注 */}
+                {order.note && (
+                  <View className="bg-orange-50 px-3 py-2 rounded-lg mt-3">
+                    <Text className="text-xs text-orange-600">备注: {order.note}</Text>
+                  </View>
+                )}
+
+                {/* 总价 */}
+                <View className="flex flex-row justify-between items-center mt-3 pt-3 border-t border-gray-100">
+                  <Text className="text-sm text-gray-500">
+                    共 {order.items.reduce((sum, item) => sum + item.quantity, 0)} 件
+                  </Text>
+                  <Text className="text-lg font-bold text-orange-500">
+                    ¥{order.total_price}
+                  </Text>
+                </View>
+              </View>
+            ))}
           </View>
         )}
       </ScrollView>
 
-      {/* 底部提交按钮 */}
-      {cartItems.length > 0 && (
-        <View 
-          style={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            backgroundColor: '#fff',
-            borderTopWidth: 1,
-            borderTopColor: '#e5e7eb',
-            borderTopStyle: 'solid',
-            padding: 12,
-            paddingLeft: 16,
-            paddingRight: 16,
-            zIndex: 50,
-            boxSizing: 'border-box'
-          }}
-        >
+      {/* 底部加菜按钮 */}
+      {orders.length > 0 && (
+        <View className="bg-white border-t border-gray-200 p-3">
           <View
             hoverClass="opacity-80"
-            onClick={loading ? undefined : handleSubmitOrder}
-            style={{
-              backgroundColor: loading ? '#d1d5db' : '#f97316',
-              borderRadius: 8,
-              height: 44,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
+            onClick={handleAddMore}
+            className="bg-orange-500 rounded-full py-3 flex items-center justify-center"
           >
-            <Text style={{ color: '#fff', fontWeight: '600', fontSize: 15 }}>
-              {loading ? '提交中...' : '提交订单'}
-            </Text>
+            <Text className="text-white font-semibold">我要加菜</Text>
           </View>
         </View>
       )}
