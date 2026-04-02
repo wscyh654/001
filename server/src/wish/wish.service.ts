@@ -101,8 +101,57 @@ export class WishService {
     }
   }
 
-  async remove(id: string) {
+  async update(id: string, updateDto: { dish_name?: string; description?: string }, userId: string) {
     const client = getSupabaseClient();
+
+    // 检查是否是创建者
+    const { data: wish } = await client
+      .from('wish_dishes')
+      .select('user_id')
+      .eq('id', id)
+      .single();
+
+    if (!wish) {
+      throw new Error('心愿不存在');
+    }
+
+    if (wish.user_id !== userId) {
+      throw new Error('无权编辑此心愿');
+    }
+
+    const { data, error } = await client
+      .from('wish_dishes')
+      .update({
+        dish_name: updateDto.dish_name,
+        description: updateDto.description,
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating wish:', error);
+      throw new Error('更新心愿失败');
+    }
+
+    return data;
+  }
+
+  async remove(id: string, userId?: string, isAdmin?: boolean) {
+    const client = getSupabaseClient();
+
+    // 如果不是管理员，检查是否是创建者
+    if (!isAdmin && userId) {
+      const { data: wish } = await client
+        .from('wish_dishes')
+        .select('user_id')
+        .eq('id', id)
+        .single();
+
+      if (!wish || wish.user_id !== userId) {
+        throw new Error('无权删除此心愿');
+      }
+    }
 
     // 先删除投票记录
     await client

@@ -23,6 +23,7 @@ interface OrderItem {
 
 interface Wish {
   id: string
+  user_id: string | null
   dish_name: string
   description: string | null
   vote_count: number
@@ -44,6 +45,9 @@ const ProfilePage = () => {
   const [showAddWish, setShowAddWish] = useState(false)
   const [newWishName, setNewWishName] = useState('')
   const [newWishDesc, setNewWishDesc] = useState('')
+  const [editingWish, setEditingWish] = useState<Wish | null>(null)
+  const [editWishName, setEditWishName] = useState('')
+  const [editWishDesc, setEditWishDesc] = useState('')
 
   useDidShow(() => {
     // 检查是否已经是管理员
@@ -217,9 +221,11 @@ const ProfilePage = () => {
     if (!result.confirm) return
 
     try {
+      const userId = getUserId()
       const res = await Network.request({
         url: `/api/wish/${wishId}`,
-        method: 'DELETE'
+        method: 'DELETE',
+        data: { user_id: userId, is_admin: isAdminMode }
       })
       if (res.data && res.data.code === 200) {
         Taro.showToast({ title: '已删除', icon: 'success' })
@@ -228,6 +234,43 @@ const ProfilePage = () => {
     } catch (error) {
       console.error('删除心愿失败:', error)
       Taro.showToast({ title: '删除失败', icon: 'none' })
+    }
+  }
+
+  const handleEditWish = (wish: Wish) => {
+    setEditingWish(wish)
+    setEditWishName(wish.dish_name)
+    setEditWishDesc(wish.description || '')
+  }
+
+  const handleUpdateWish = async () => {
+    if (!editingWish) return
+    if (!editWishName.trim()) {
+      Taro.showToast({ title: '请输入菜品名称', icon: 'none' })
+      return
+    }
+
+    try {
+      const userId = getUserId()
+      const res = await Network.request({
+        url: `/api/wish/${editingWish.id}`,
+        method: 'PUT',
+        data: {
+          dish_name: editWishName.trim(),
+          description: editWishDesc.trim() || null,
+          user_id: userId
+        }
+      })
+      if (res.data && res.data.code === 200) {
+        Taro.showToast({ title: '已更新', icon: 'success' })
+        setEditingWish(null)
+        setEditWishName('')
+        setEditWishDesc('')
+        fetchWishes()
+      }
+    } catch (error) {
+      console.error('更新心愿失败:', error)
+      Taro.showToast({ title: '更新失败', icon: 'none' })
     }
   }
 
@@ -365,33 +408,92 @@ const ProfilePage = () => {
             </View>
           ) : (
             <View>
-              {wishes.map((wish) => (
-                <View key={wish.id} className="px-4 py-3 border-b border-gray-50 flex flex-row items-center justify-between">
-                  <View className="flex-1 mr-3">
-                    <Text className="text-sm font-semibold text-gray-900">{wish.dish_name}</Text>
-                    {wish.description && (
-                      <Text className="text-xs text-gray-500 mt-1" numberOfLines={1}>{wish.description}</Text>
-                    )}
-                  </View>
-                  <View className="flex flex-row items-center gap-2">
-                    <View
-                      className="flex flex-row items-center gap-1 bg-orange-50 rounded-full px-3 py-1"
-                      onClick={() => handleVoteWish(wish.id)}
-                    >
-                      <Text className="text-sm">👍</Text>
-                      <Text className="text-sm text-orange-600 font-semibold">{wish.vote_count}</Text>
+              {wishes.map((wish) => {
+                const currentUserId = getUserId()
+                const isOwner = wish.user_id === currentUserId
+                const canManage = isOwner || isAdminMode
+                
+                return (
+                  <View key={wish.id} className="px-4 py-3 border-b border-gray-50">
+                    <View className="flex flex-row items-center justify-between">
+                      <View className="flex-1 mr-3">
+                        <Text className="text-sm font-semibold text-gray-900">{wish.dish_name}</Text>
+                        {wish.description && (
+                          <Text className="text-xs text-gray-500 mt-1" numberOfLines={1}>{wish.description}</Text>
+                        )}
+                      </View>
+                      <View className="flex flex-row items-center gap-2">
+                        <View
+                          className="flex flex-row items-center gap-1 bg-orange-50 rounded-full px-3 py-1"
+                          onClick={() => handleVoteWish(wish.id)}
+                        >
+                          <Text className="text-sm">👍</Text>
+                          <Text className="text-sm text-orange-600 font-semibold">{wish.vote_count}</Text>
+                        </View>
+                      </View>
                     </View>
-                    {isAdminMode && (
-                      <View
-                        className="px-2 py-1 rounded-full bg-red-50"
-                        onClick={() => handleDeleteWish(wish.id)}
-                      >
-                        <Text className="text-xs text-red-500">删除</Text>
+                    {canManage && (
+                      <View className="flex flex-row justify-end gap-2 mt-2">
+                        <View
+                          className="px-3 py-1 rounded-full bg-blue-50"
+                          onClick={() => handleEditWish(wish)}
+                        >
+                          <Text className="text-xs text-blue-500">编辑</Text>
+                        </View>
+                        <View
+                          className="px-3 py-1 rounded-full bg-red-50"
+                          onClick={() => handleDeleteWish(wish.id)}
+                        >
+                          <Text className="text-xs text-red-500">删除</Text>
+                        </View>
                       </View>
                     )}
                   </View>
+                )
+              })}
+            </View>
+          )}
+          
+          {/* 编辑心愿弹窗 */}
+          {editingWish && (
+            <View className="px-4 py-3 border-b border-gray-100 bg-blue-50">
+              <Text className="text-sm font-semibold text-gray-900 mb-3">编辑心愿</Text>
+              <View className="mb-3">
+                <Text className="text-xs text-gray-600 mb-1">菜品名称</Text>
+                <View className="bg-white rounded-lg px-3 py-2">
+                  <Input
+                    className="w-full text-sm"
+                    placeholder="菜品名称"
+                    value={editWishName}
+                    onInput={(e) => setEditWishName(e.detail.value)}
+                  />
                 </View>
-              ))}
+              </View>
+              <View className="mb-3">
+                <Text className="text-xs text-gray-600 mb-1">描述（选填）</Text>
+                <View className="bg-white rounded-lg px-3 py-2">
+                  <Input
+                    className="w-full text-sm"
+                    placeholder="描述..."
+                    value={editWishDesc}
+                    onInput={(e) => setEditWishDesc(e.detail.value)}
+                  />
+                </View>
+              </View>
+              <View className="flex flex-row gap-2">
+                <View
+                  className="flex-1 bg-gray-200 rounded-full py-2 items-center"
+                  onClick={() => { setEditingWish(null); setEditWishName(''); setEditWishDesc('') }}
+                >
+                  <Text className="text-sm text-gray-600">取消</Text>
+                </View>
+                <View
+                  className="flex-1 bg-blue-500 rounded-full py-2 items-center"
+                  onClick={handleUpdateWish}
+                >
+                  <Text className="text-sm text-white font-semibold">保存</Text>
+                </View>
+              </View>
             </View>
           )}
         </View>
