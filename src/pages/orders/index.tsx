@@ -170,15 +170,18 @@ const OrdersPage = () => {
           }}
         >
           <View
+            hoverClass="opacity-80"
             onClick={loading ? undefined : handleSubmitOrder}
             style={{
               backgroundColor: loading ? '#d1d5db' : '#f97316',
               borderRadius: 8,
-              paddingTop: 10,
-              paddingBottom: 10
+              height: 44,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
           >
-            <Text style={{ color: '#fff', fontWeight: '600', textAlign: 'center', fontSize: 14 }}>
+            <Text style={{ color: '#fff', fontWeight: '600', fontSize: 15 }}>
               {loading ? '提交中...' : '提交订单'}
             </Text>
           </View>

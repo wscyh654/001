@@ -255,15 +255,24 @@ const MenuPage = () => {
                           ¥{dish.price}
                         </Text>
                         <View
+                          hoverClass="opacity-80"
                           onClick={(e) => {
                             e.stopPropagation()
                             handleDishClick(dish.id)
                           }}
-                          className="bg-orange-500 text-white rounded-lg py-1.5 px-3"
+                          style={{
+                            backgroundColor: '#f97316',
+                            borderRadius: 6,
+                            paddingLeft: 12,
+                            paddingRight: 12,
+                            paddingTop: 6,
+                            paddingBottom: 6,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
                         >
-                          <Text className="block text-center font-semibold text-xs">
-                            选规格
-                          </Text>
+                          <Text style={{ color: '#fff', fontWeight: '600', fontSize: 13 }}>点单</Text>
                         </View>
                       </View>
                     </View>
