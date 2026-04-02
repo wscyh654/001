@@ -95,7 +95,7 @@ const OrdersPage = () => {
             <Text className="text-4xl mb-3">📋</Text>
             <Text className="text-gray-500 mb-4">暂无订单</Text>
             <View
-              className="bg-orange-500 rounded-lg px-6 py-2"
+              className="bg-orange-500 rounded-full px-6 py-2"
               onClick={handleAddMore}
             >
               <Text className="text-white font-semibold">去点菜</Text>

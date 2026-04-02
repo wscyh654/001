@@ -420,9 +420,9 @@ const MenuPage = () => {
                               onClick={(e) => handleAddToCart(dish, e)}
                               style={{
                                 backgroundColor: '#f97316',
-                                borderRadius: 6,
-                                paddingLeft: 12,
-                                paddingRight: 12,
+                                borderRadius: 20,
+                                paddingLeft: 16,
+                                paddingRight: 16,
                                 paddingTop: 6,
                                 paddingBottom: 6,
                                 display: 'flex',
@@ -508,7 +508,7 @@ const MenuPage = () => {
             onClick={() => Taro.switchTab({ url: '/pages/cart/index' })}
             style={{
               backgroundColor: '#f97316',
-              borderRadius: 8,
+              borderRadius: 20,
               paddingLeft: 32,
               paddingRight: 32,
               paddingTop: 10,

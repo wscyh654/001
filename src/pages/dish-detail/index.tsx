@@ -405,7 +405,7 @@ const DishDetailPage = () => {
           </View>
           <View
             hoverClass="opacity-80"
-            style={{ backgroundColor: '#f97316', borderRadius: 8, paddingTop: 12, paddingBottom: 12, paddingLeft: 32, paddingRight: 32 }}
+            style={{ backgroundColor: '#f97316', borderRadius: 20, paddingTop: 12, paddingBottom: 12, paddingLeft: 32, paddingRight: 32 }}
             onClick={handleAddToCart}
           >
             <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>加入购物车</Text>
@@ -455,14 +455,14 @@ const DishDetailPage = () => {
             <View style={{ display: 'flex', flexDirection: 'row', gap: 12 }}>
               <View 
                 hoverClass="opacity-70"
-                style={{ flex: 1, backgroundColor: '#f5f5f5', borderRadius: 8, paddingTop: 12, paddingBottom: 12 }}
+                style={{ flex: 1, backgroundColor: '#f5f5f5', borderRadius: 20, paddingTop: 12, paddingBottom: 12 }}
                 onClick={handleSkipNote}
               >
                 <Text style={{ textAlign: 'center', color: '#6b7280', fontSize: 14 }}>跳过</Text>
               </View>
               <View 
                 hoverClass="opacity-80"
-                style={{ flex: 1, backgroundColor: '#f97316', borderRadius: 8, paddingTop: 12, paddingBottom: 12 }}
+                style={{ flex: 1, backgroundColor: '#f97316', borderRadius: 20, paddingTop: 12, paddingBottom: 12 }}
                 onClick={handleConfirmNote}
               >
                 <Text style={{ textAlign: 'center', color: '#fff', fontWeight: '600', fontSize: 14 }}>确认</Text>

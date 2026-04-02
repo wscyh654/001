@@ -165,9 +165,9 @@ const CartPage = () => {
             <Text style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>购物车为空</Text>
             <View
               onClick={() => Taro.switchTab({ url: '/pages/menu/index' })}
-              style={{ backgroundColor: '#f97316', borderRadius: 8, paddingTop: 8, paddingBottom: 8, paddingLeft: 24, paddingRight: 24 }}
+              style={{ backgroundColor: '#f97316', borderRadius: 20, paddingTop: 10, paddingBottom: 10, paddingLeft: 24, paddingRight: 24 }}
             >
-              <Text style={{ color: '#fff', fontWeight: '600', fontSize: 13 }}>去点菜</Text>
+              <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>去点菜</Text>
             </View>
           </View>
         ) : (

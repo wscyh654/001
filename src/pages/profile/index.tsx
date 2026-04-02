@@ -1,6 +1,6 @@
-import { View, Text, ScrollView, Input } from '@tarojs/components'
+import { View, Text, ScrollView, Input, Image } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Network } from '@/network'
 import { isAdmin, setAdminStatus, clearAdminStatus } from '@/utils/user'
 import './index.css'
@@ -29,6 +29,7 @@ const ProfilePage = () => {
   const [isAdminMode, setIsAdminMode] = useState(false)
   const [showPasswordInput, setShowPasswordInput] = useState(false)
   const [password, setPassword] = useState('')
+  const [qrCodeUrl, setQrCodeUrl] = useState('')
 
   useDidShow(() => {
     // 检查是否已经是管理员
@@ -40,6 +41,17 @@ const ProfilePage = () => {
       setLoading(false)
     }
   })
+
+  useEffect(() => {
+    // 生成二维码 URL（使用第三方 API 生成二维码）
+    // 实际生产环境应该使用微信小程序码 API
+    const currentUrl = typeof window !== 'undefined' ? window.location.origin : ''
+    if (currentUrl) {
+      // 使用 QRServer API 生成二维码
+      const encodedUrl = encodeURIComponent(currentUrl)
+      setQrCodeUrl(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedUrl}`)
+    }
+  }, [])
 
   const fetchOrders = async (adminMode: boolean) => {
     try {
@@ -118,6 +130,12 @@ const ProfilePage = () => {
     }
   }
 
+  const handleSaveQrCode = () => {
+    if (qrCodeUrl) {
+      Taro.showToast({ title: '长按图片保存', icon: 'none' })
+    }
+  }
+
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
       'pending': '待处理',
@@ -157,6 +175,33 @@ const ProfilePage = () => {
   return (
     <View className="flex flex-col h-full bg-gray-50">
       <ScrollView scrollY className="flex-1">
+        {/* 扫码点餐 */}
+        <View className="bg-white mb-3">
+          <View className="px-4 py-3 border-b border-gray-100">
+            <Text className="text-sm font-semibold text-gray-900">扫码点餐</Text>
+          </View>
+          <View className="flex flex-col items-center py-6">
+            {qrCodeUrl ? (
+              <View 
+                className="bg-white p-4 rounded-2xl shadow-sm"
+                onClick={handleSaveQrCode}
+              >
+                <Image
+                  src={qrCodeUrl}
+                  style={{ width: 180, height: 180 }}
+                  mode="aspectFit"
+                />
+              </View>
+            ) : (
+              <View className="w-48 h-48 bg-gray-100 rounded-2xl flex items-center justify-center">
+                <Text className="text-gray-400">生成中...</Text>
+              </View>
+            )}
+            <Text className="text-sm text-gray-500 mt-4">扫描二维码进入点餐页面</Text>
+            <Text className="text-xs text-gray-400 mt-1">长按图片可保存</Text>
+          </View>
+        </View>
+
         {/* 管理入口 */}
         <View className="bg-white mb-3">
           <View className="px-4 py-3 border-b border-gray-100">
@@ -183,7 +228,7 @@ const ProfilePage = () => {
             <Text className="text-sm font-semibold text-gray-900">订单管理</Text>
             {isAdminMode && (
               <View
-                className="px-3 py-1 rounded bg-gray-100"
+                className="px-4 py-1.5 rounded-full bg-gray-100"
                 onClick={handleLogout}
               >
                 <Text className="text-xs text-gray-600">退出管理</Text>
@@ -196,7 +241,7 @@ const ProfilePage = () => {
               <View className="p-4">
                 <Text className="text-sm text-gray-600 mb-3">请输入管理员密码</Text>
                 <View className="flex flex-row gap-2">
-                  <View className="flex-1 bg-gray-50 rounded-lg px-3 py-2">
+                  <View className="flex-1 bg-gray-50 rounded-full px-4 py-2">
                     <Input
                       className="w-full bg-transparent text-sm"
                       password
@@ -206,17 +251,17 @@ const ProfilePage = () => {
                     />
                   </View>
                   <View
-                    className="bg-orange-500 rounded-lg px-4 py-2 flex items-center justify-center"
+                    className="bg-orange-500 rounded-full px-5 py-2 flex items-center justify-center"
                     onClick={handleAdminLogin}
                   >
-                    <Text className="text-white text-sm">确认</Text>
+                    <Text className="text-white text-sm font-semibold">确认</Text>
                   </View>
                 </View>
                 <View
-                  className="mt-2"
+                  className="mt-3 px-4 py-2"
                   onClick={() => { setShowPasswordInput(false); setPassword('') }}
                 >
-                  <Text className="text-xs text-gray-400">取消</Text>
+                  <Text className="text-sm text-gray-400">取消</Text>
                 </View>
               </View>
             ) : (
@@ -224,7 +269,9 @@ const ProfilePage = () => {
                 className="px-4 py-4 flex items-center justify-center"
                 onClick={() => setShowPasswordInput(true)}
               >
-                <Text className="text-sm text-orange-500">点击进入管理员模式</Text>
+                <View className="bg-orange-500 rounded-full px-6 py-2">
+                  <Text className="text-sm text-white font-semibold">进入管理员模式</Text>
+                </View>
               </View>
             )
           ) : loading ? (
@@ -247,7 +294,7 @@ const ProfilePage = () => {
                         桌号: {order.table_number}
                       </Text>
                       <View 
-                        className="px-2 py-0.5 rounded"
+                        className="px-2 py-0.5 rounded-full"
                         style={{ backgroundColor: `${getStatusColor(order.status)}20` }}
                       >
                         <Text 
@@ -279,7 +326,7 @@ const ProfilePage = () => {
 
                   {/* 备注 */}
                   {order.note && (
-                    <View className="bg-orange-50 px-2 py-1 rounded mb-2">
+                    <View className="bg-orange-50 px-3 py-1.5 rounded-full mb-2 self-start">
                       <Text className="text-xs text-orange-600">备注: {order.note}</Text>
                     </View>
                   )}
@@ -299,17 +346,17 @@ const ProfilePage = () => {
                     <View className="flex flex-row gap-2">
                       {order.status !== 'completed' && (
                         <View
-                          className="px-3 py-1 rounded bg-green-500"
+                          className="px-4 py-1.5 rounded-full bg-green-500"
                           onClick={() => handleCompleteOrder(order.id)}
                         >
-                          <Text className="text-xs text-white">完成</Text>
+                          <Text className="text-xs text-white font-semibold">完成</Text>
                         </View>
                       )}
                       <View
-                        className="px-3 py-1 rounded bg-red-500"
+                        className="px-4 py-1.5 rounded-full bg-red-500"
                         onClick={() => handleDeleteOrder(order.id)}
                       >
-                        <Text className="text-xs text-white">删除</Text>
+                        <Text className="text-xs text-white font-semibold">删除</Text>
                       </View>
                     </View>
                   </View>
