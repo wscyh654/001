@@ -1,4 +1,4 @@
-import { View, Text, ScrollView } from '@tarojs/components'
+import { View, Text, ScrollView, Input } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import { Network } from '@/network'
@@ -18,6 +18,8 @@ interface CartItem {
 const CartPage = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [tableNumber, setTableNumber] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   useDidShow(() => {
     fetchCartItems()
@@ -87,11 +89,18 @@ const CartPage = () => {
       return
     }
 
+    if (!tableNumber.trim()) {
+      Taro.showToast({ title: '请输入桌号', icon: 'none' })
+      return
+    }
+
     try {
+      setSubmitting(true)
       const res = await Network.request({
         url: '/api/orders',
         method: 'POST',
         data: {
+          table_number: parseInt(tableNumber),
           items: cartItems.map(item => ({
             dishId: item.dish_id,
             dishName: item.dish_name,
@@ -108,6 +117,7 @@ const CartPage = () => {
           icon: 'success',
           duration: 2000
         })
+        setTableNumber('')
         fetchCartItems()
         // 跳转到订单页
         setTimeout(() => {
@@ -117,6 +127,8 @@ const CartPage = () => {
     } catch (error) {
       console.error('下单失败:', error)
       Taro.showToast({ title: '下单失败', icon: 'none' })
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -150,6 +162,20 @@ const CartPage = () => {
           </View>
         ) : (
           <View>
+            {/* 桌号输入 */}
+            <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 12, marginBottom: 12, boxSizing: 'border-box' }}>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 8 }}>桌号</Text>
+              <View style={{ backgroundColor: '#f9fafb', borderRadius: 8, paddingLeft: 12, paddingRight: 12, paddingTop: 10, paddingBottom: 10 }}>
+                <Input
+                  style={{ width: '100%', backgroundColor: 'transparent', fontSize: 14 }}
+                  placeholder="请输入桌号"
+                  value={tableNumber}
+                  onInput={(e) => setTableNumber(e.detail.value)}
+                  type="number"
+                />
+              </View>
+            </View>
+
             {cartItems.map((item) => (
               <View 
                 key={item.id} 
@@ -251,10 +277,10 @@ const CartPage = () => {
             </View>
             <View
               hoverClass="opacity-80"
-              onClick={handleCheckout}
-              style={{ backgroundColor: '#f97316', borderRadius: 8, paddingTop: 10, paddingBottom: 10, paddingLeft: 32, paddingRight: 32 }}
+              onClick={submitting ? undefined : handleCheckout}
+              style={{ backgroundColor: submitting ? '#d1d5db' : '#f97316', borderRadius: 8, paddingTop: 10, paddingBottom: 10, paddingLeft: 32, paddingRight: 32 }}
             >
-              <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>去结算</Text>
+              <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>{submitting ? '下单中...' : '去下单'}</Text>
             </View>
           </View>
         </View>

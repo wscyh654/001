@@ -1,18 +1,29 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
+  @Get()
+  async findAll() {
+    const orders = await this.ordersService.findAll();
+    return {
+      code: 200,
+      msg: '获取订单列表成功',
+      data: orders,
+    };
+  }
+
   @Post()
   async create(@Body() createOrderDto: {
-    table_number: number;
+    table_number?: number;
     items: Array<{
       dishId: string;
       dishName: string;
-      dishPrice: number;
+      price: number;
       quantity: number;
+      specs?: any;
     }>;
     note?: string;
   }) {

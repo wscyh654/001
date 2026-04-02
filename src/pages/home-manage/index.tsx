@@ -4,58 +4,113 @@ import { useState } from 'react'
 import { Network } from '@/network'
 import './index.css'
 
-interface BannerDish {
+interface Banner {
   id: string
-  name: string
-  price: number
-  image: string | null
-  is_banner: boolean
+  title: string | null
+  image: string
+  link_type: string
+  link_id: string | null
+  sort_order: number
+  is_active: boolean
 }
 
 const HomeManagePage = () => {
-  const [dishes, setDishes] = useState<BannerDish[]>([])
+  const [banners, setBanners] = useState<Banner[]>([])
   const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
 
   useDidShow(() => {
-    fetchDishes()
+    fetchBanners()
   })
 
-  const fetchDishes = async () => {
+  const fetchBanners = async () => {
     try {
       setLoading(true)
       const res = await Network.request({
-        url: '/api/dishes',
+        url: '/api/banners',
         method: 'GET'
       })
-      console.log('Dishes response:', res.data)
+      console.log('Banners response:', res.data)
       if (res.data && res.data.data) {
-        setDishes(res.data.data.filter((dish: BannerDish) => dish.image))
+        setBanners(res.data.data)
       }
     } catch (error) {
-      console.error('获取菜品失败:', error)
+      console.error('获取轮播图失败:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleToggleBanner = async (dishId: string, currentStatus: boolean) => {
+  const handleChooseImage = async () => {
+    try {
+      const result = await Taro.chooseImage({
+        count: 1,
+        sizeType: ['compressed'],
+        sourceType: ['album']
+      })
+      
+      if (result.tempFilePaths && result.tempFilePaths.length > 0) {
+        await uploadBanner(result.tempFilePaths[0])
+      }
+    } catch (error) {
+      console.error('选择图片失败:', error)
+    }
+  }
+
+  const uploadBanner = async (filePath: string) => {
+    try {
+      setUploading(true)
+      Taro.showLoading({ title: '上传中...' })
+      
+      const res = await Network.uploadFile({
+        url: '/api/upload',
+        filePath: filePath,
+        name: 'file'
+      })
+      
+      const data = JSON.parse(res.data)
+      console.log('Upload response:', data)
+      
+      if (data && data.code === 200 && data.data && data.data.url) {
+        // 创建轮播图记录
+        const createRes = await Network.request({
+          url: '/api/banners',
+          method: 'POST',
+          data: {
+            image: data.data.url,
+            title: '海报图片',
+            sort_order: banners.length
+          }
+        })
+        
+        if (createRes.data && createRes.data.code === 200) {
+          Taro.showToast({ title: '上传成功', icon: 'success' })
+          fetchBanners()
+        }
+      }
+    } catch (error) {
+      console.error('上传失败:', error)
+      Taro.showToast({ title: '上传失败', icon: 'none' })
+    } finally {
+      setUploading(false)
+      Taro.hideLoading()
+    }
+  }
+
+  const handleDelete = async (id: string) => {
     try {
       const res = await Network.request({
-        url: `/api/dishes/${dishId}`,
-        method: 'PUT',
-        data: { is_banner: !currentStatus }
+        url: `/api/banners/${id}`,
+        method: 'DELETE'
       })
       
       if (res.data && res.data.code === 200) {
-        Taro.showToast({ 
-          title: !currentStatus ? '已添加到主页轮播' : '已从主页轮播移除', 
-          icon: 'success' 
-        })
-        fetchDishes()
+        Taro.showToast({ title: '已删除', icon: 'success' })
+        fetchBanners()
       }
     } catch (error) {
-      console.error('更新失败:', error)
-      Taro.showToast({ title: '操作失败', icon: 'none' })
+      console.error('删除失败:', error)
+      Taro.showToast({ title: '删除失败', icon: 'none' })
     }
   }
 
@@ -65,7 +120,18 @@ const HomeManagePage = () => {
         {/* 说明 */}
         <View className="bg-orange-50 rounded-xl p-3 mb-3">
           <Text className="text-sm text-orange-600">
-            💡 选择要在主页轮播展示的菜品图片，勾选的菜品将会在小程序首页的大图轮播中展示。
+            💡 点击下方按钮从手机相册选择海报图片上传，上传的图片将会在小程序首页的大图轮播中展示。
+          </Text>
+        </View>
+
+        {/* 上传按钮 */}
+        <View
+          className={`bg-white rounded-xl p-4 mb-3 flex flex-row items-center justify-center ${uploading ? 'opacity-50' : ''}`}
+          onClick={uploading ? undefined : handleChooseImage}
+        >
+          <Text className="text-2xl mr-2">📷</Text>
+          <Text className="text-base text-orange-500 font-semibold">
+            {uploading ? '上传中...' : '从相册选择图片上传'}
           </Text>
         </View>
 
@@ -73,55 +139,48 @@ const HomeManagePage = () => {
           <View className="flex items-center justify-center py-12">
             <Text className="text-gray-500">加载中...</Text>
           </View>
-        ) : dishes.length === 0 ? (
+        ) : banners.length === 0 ? (
           <View className="flex flex-col items-center justify-center py-12">
             <Text className="text-4xl mb-3">🖼️</Text>
-            <Text className="text-gray-500">暂有可用的菜品图片</Text>
-            <Text className="text-xs text-gray-400 mt-1">请先在菜品管理中上传菜品图片</Text>
+            <Text className="text-gray-500">暂无轮播图</Text>
+            <Text className="text-xs text-gray-400 mt-1">点击上方按钮上传海报图片</Text>
           </View>
         ) : (
           <View>
-            {dishes.map((dish) => (
+            <Text className="text-sm text-gray-500 mb-2">已上传的海报图片</Text>
+            {banners.map((banner) => (
               <View
-                key={dish.id}
-                className="bg-white rounded-xl p-3 mb-3 flex flex-row gap-3"
+                key={banner.id}
+                className="bg-white rounded-xl p-3 mb-3"
               >
-                {/* 菜品图片 */}
-                <View className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
-                  {dish.image ? (
+                <View className="flex flex-row gap-3">
+                  {/* 图片预览 */}
+                  <View className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
                     <Image
-                      src={dish.image}
+                      src={banner.image}
                       mode="aspectFill"
                       className="w-full h-full"
                     />
-                  ) : (
-                    <View className="w-full h-full flex items-center justify-center">
-                      <Text className="text-2xl">🍽️</Text>
-                    </View>
-                  )}
-                </View>
-
-                {/* 菜品信息 */}
-                <View className="flex-1 flex flex-col justify-between min-w-0">
-                  <View>
-                    <Text className="text-sm font-semibold text-gray-900" numberOfLines={1}>
-                      {dish.name}
-                    </Text>
-                    <Text className="text-sm text-orange-500 font-bold mt-1">
-                      ¥{dish.price}
-                    </Text>
                   </View>
 
-                  {/* 开关按钮 */}
-                  <View
-                    className={`self-start px-3 py-1.5 rounded-full ${
-                      dish.is_banner ? 'bg-orange-500' : 'bg-gray-200'
-                    }`}
-                    onClick={() => handleToggleBanner(dish.id, dish.is_banner)}
-                  >
-                    <Text className={`text-xs font-medium ${dish.is_banner ? 'text-white' : 'text-gray-600'}`}>
-                      {dish.is_banner ? '✓ 已选' : '选择'}
-                    </Text>
+                  {/* 信息和操作 */}
+                  <View className="flex-1 flex flex-col justify-between min-w-0">
+                    <View>
+                      <Text className="text-sm font-semibold text-gray-900">
+                        {banner.title || '海报图片'}
+                      </Text>
+                      <Text className="text-xs text-gray-400 mt-1">
+                        排序: {banner.sort_order + 1}
+                      </Text>
+                    </View>
+
+                    {/* 删除按钮 */}
+                    <View
+                      className="self-start px-3 py-1.5 rounded-full bg-red-50"
+                      onClick={() => handleDelete(banner.id)}
+                    >
+                      <Text className="text-xs text-red-500">删除</Text>
+                    </View>
                   </View>
                 </View>
               </View>
