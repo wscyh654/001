@@ -1,10 +1,12 @@
 export default defineAppConfig({
   pages: [
+    'pages/home/index',
     'pages/menu/index',
     'pages/cart/index',
     'pages/orders/index',
     'pages/messages/index',
-    'pages/dish-manage/index'
+    'pages/dish-manage/index',
+    'pages/dish-detail/index'
   ],
   window: {
     backgroundTextStyle: 'light',

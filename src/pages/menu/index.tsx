@@ -186,6 +186,26 @@ const MenuPage = () => {
         {/* 左侧分类栏 */}
         <ScrollView scrollY style={{ width: 80, backgroundColor: '#fff', flexShrink: 0 }}>
           <View style={{ paddingTop: 8, paddingBottom: 8 }}>
+            {/* 主页入口 */}
+            <View
+              onClick={() => Taro.navigateTo({ url: '/pages/home/index' })}
+              style={{
+                paddingLeft: 12,
+                paddingRight: 12,
+                paddingTop: 12,
+                paddingBottom: 12,
+                backgroundColor: '#fff7ed',
+                borderBottomWidth: 1,
+                borderBottomColor: '#f3f4f6',
+                borderBottomStyle: 'solid'
+              }}
+            >
+              <View style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                <Text style={{ fontSize: 20 }}>🏠</Text>
+                <Text style={{ fontSize: 12, color: '#f97316', fontWeight: '600' }}>主页</Text>
+              </View>
+            </View>
+            
             <Text style={{ fontSize: 11, fontWeight: '600', color: '#6b7280', paddingLeft: 12, paddingTop: 8, paddingBottom: 8 }}>菜系</Text>
             {CUISINE_TYPES.map((item) => (
               <View
