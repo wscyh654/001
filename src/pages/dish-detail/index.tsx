@@ -29,7 +29,7 @@ interface DishDetail {
   spiciness: string | null
   temperature: string | null
   specifications: Spec[] | null
-  is_available: boolean
+  is_active: boolean
 }
 
 const DishDetailPage = () => {

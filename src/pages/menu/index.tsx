@@ -17,7 +17,7 @@ interface Dish {
   spiciness: string | null
   temperature: string | null
   is_new: boolean
-  is_available: boolean
+  is_active: boolean
 }
 
 interface CartItem {
@@ -112,7 +112,7 @@ const MenuPage = () => {
     const cuisineMatch = selectedCuisine === 'all' || dish.cuisine_type === selectedCuisine
     const methodMatch = selectedMethod === 'all' || dish.cooking_method === selectedMethod
     const stapleMatch = selectedStaple === 'all' || dish.category === selectedStaple
-    return cuisineMatch && methodMatch && stapleMatch && dish.is_available
+    return cuisineMatch && methodMatch && stapleMatch && dish.is_active
   })
 
   const getSpicinessLabel = (spiciness: string | null) => {

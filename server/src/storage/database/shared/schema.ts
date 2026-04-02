@@ -38,7 +38,7 @@ export const dishes = pgTable("dishes", {
   temperature: varchar("temperature", { length: 20 }).default("normal"),
   specifications: jsonb("specifications"),
   isNew: boolean("is_new").default(false),
-  isAvailable: boolean("is_available").default(true).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -48,7 +48,7 @@ export const dishes = pgTable("dishes", {
   index("dishes_cuisine_type_idx").on(table.cuisineType),
   index("dishes_cooking_method_idx").on(table.cookingMethod),
   index("dishes_is_new_idx").on(table.isNew),
-  index("dishes_is_available_idx").on(table.isAvailable),
+  index("dishes_is_active_idx").on(table.isActive),
 ]);
 
 export const dishSpecs = pgTable("dish_specs", {
