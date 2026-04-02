@@ -37,7 +37,6 @@ export default function DishManagePage() {
     price: '',
     image: '',
     description: '',
-    stock: '999',
     spiciness: 'none',
     temperature: 'hot',
     isNew: false
@@ -186,7 +185,7 @@ export default function DishManagePage() {
         price: parseFloat(formData.price),
         image: formData.image || undefined,
         description: formData.description.trim() || undefined,
-        stock: parseInt(formData.stock) || 999,
+        stock: 999,
         spiciness: formData.spiciness,
         temperature: formData.temperature,
         isNew: formData.isNew,
@@ -257,7 +256,6 @@ export default function DishManagePage() {
       price: '',
       image: '',
       description: '',
-      stock: '999',
       spiciness: 'none',
       temperature: 'hot',
       isNew: false
@@ -363,31 +361,17 @@ export default function DishManagePage() {
               </View>
             </View>
 
-            {/* 价格和库存 */}
-            <View className="flex gap-3 mb-4">
-              <View className="flex-1">
-                <Text className="block text-sm font-medium text-gray-700 mb-2">价格（元）*</Text>
-                <View className="bg-gray-50 rounded-lg px-3 py-2">
-                  <Input
-                    className="w-full"
-                    type="digit"
-                    placeholder="0.00"
-                    value={formData.price}
-                    onInput={(e) => setFormData({ ...formData, price: e.detail.value })}
-                  />
-                </View>
-              </View>
-              <View className="flex-1">
-                <Text className="block text-sm font-medium text-gray-700 mb-2">库存</Text>
-                <View className="bg-gray-50 rounded-lg px-3 py-2">
-                  <Input
-                    className="w-full"
-                    type="number"
-                    placeholder="999"
-                    value={formData.stock}
-                    onInput={(e) => setFormData({ ...formData, stock: e.detail.value })}
-                  />
-                </View>
+            {/* 价格 */}
+            <View className="mb-4">
+              <Text className="block text-sm font-medium text-gray-700 mb-2">价格（元）*</Text>
+              <View className="bg-gray-50 rounded-lg px-3 py-2">
+                <Input
+                  className="w-full"
+                  type="digit"
+                  placeholder="0.00"
+                  value={formData.price}
+                  onInput={(e) => setFormData({ ...formData, price: e.detail.value })}
+                />
               </View>
             </View>
 
@@ -584,10 +568,7 @@ export default function DishManagePage() {
                     )}
                   </View>
                   <Text className="text-sm text-gray-500 mt-1">
-                    ¥{dish.price} · 库存 {dish.stock}
-                  </Text>
-                  <Text className="text-xs text-gray-400 mt-1">
-                    {dish.category} {dish.cuisine_type ? `· ${dish.cuisine_type}` : ''}
+                    ¥{dish.price} · {dish.category} {dish.cuisine_type ? `· ${dish.cuisine_type}` : ''}
                   </Text>
                 </View>
                 <View

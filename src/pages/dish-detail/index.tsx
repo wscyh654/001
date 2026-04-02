@@ -363,20 +363,17 @@ const DishDetailPage = () => {
                   width: 32,
                   height: 32,
                   borderRadius: 16,
-                  backgroundColor: quantity < dish.stock ? '#ffedd5' : '#f3f4f6',
+                  backgroundColor: '#ffedd5',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}
-                onClick={() => {
-                  if (quantity < dish.stock) setQuantity(quantity + 1)
-                }}
+                onClick={() => setQuantity(quantity + 1)}
               >
-                <Text style={{ color: quantity < dish.stock ? '#ea580c' : '#9ca3af', fontSize: 18 }}>+</Text>
+                <Text style={{ color: '#ea580c', fontSize: 18 }}>+</Text>
               </View>
             </View>
           </View>
-          <Text className="text-xs text-gray-400 mt-2">库存: {dish.stock}份</Text>
         </View>
 
         <View style={{ height: 100 }} />

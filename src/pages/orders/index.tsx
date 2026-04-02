@@ -18,8 +18,6 @@ const OrdersPage = () => {
   const [loading, setLoading] = useState(false)
 
   useLoad(() => {
-    // TODO: 从 Taro.getStorageSync 获取购物车数据
-    // 这里暂时使用模拟数据
     const mockCart = [
       { dishId: '1', dishName: '宫保鸡丁', dishPrice: 38, quantity: 2 },
       { dishId: '2', dishName: '麻婆豆腐', dishPrice: 22, quantity: 1 }
@@ -60,9 +58,7 @@ const OrdersPage = () => {
       console.log('Order response:', res.data)
 
       if (res.data && res.data.data) {
-        // TODO: 清空购物车
         console.log('订单创建成功:', res.data.data)
-        // TODO: 跳转到订单详情页或提示成功
       }
     } catch (error) {
       console.error('创建订单失败:', error)
@@ -73,15 +69,13 @@ const OrdersPage = () => {
 
   return (
     <View className="flex flex-col h-full bg-gray-50">
-      <ScrollView scrollY className="flex-1 p-4">
+      <ScrollView scrollY className="flex-1 p-3">
         {/* 桌号输入 */}
-        <View className="bg-white rounded-xl shadow-sm p-4 mb-4">
-          <Text className="block text-base font-semibold text-gray-900 mb-3">
-            桌号
-          </Text>
-          <View className="bg-gray-50 rounded-xl px-4 py-3">
+        <View className="bg-white rounded-lg p-3 mb-3">
+          <Text className="block text-sm font-semibold text-gray-900 mb-2">桌号</Text>
+          <View className="bg-gray-50 rounded-lg px-3 py-2">
             <Input
-              className="w-full bg-transparent text-base"
+              className="w-full bg-transparent text-sm"
               placeholder="请输入桌号"
               value={tableNumber}
               onInput={(e) => setTableNumber(e.detail.value)}
@@ -92,33 +86,39 @@ const OrdersPage = () => {
         </View>
 
         {/* 购物车列表 */}
-        <View className="bg-white rounded-xl shadow-sm p-4 mb-4">
-          <Text className="block text-base font-semibold text-gray-900 mb-3">
+        <View className="bg-white rounded-lg p-3 mb-3">
+          <Text className="block text-sm font-semibold text-gray-900 mb-2">
             购物车 ({getTotalQuantity()} 件)
           </Text>
           {cartItems.length === 0 ? (
-            <View className="flex flex-col items-center justify-center py-8">
-              <View className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                <Text className="text-3xl">🛒</Text>
-              </View>
-              <Text className="block text-base text-gray-500">购物车为空</Text>
+            <View className="flex flex-col items-center justify-center py-6">
+              <Text className="text-2xl mb-2">🛒</Text>
+              <Text className="block text-sm text-gray-500">购物车为空</Text>
             </View>
           ) : (
-            <View className="space-y-3">
-              {cartItems.map((item) => (
+            <View>
+              {cartItems.map((item, index) => (
                 <View
                   key={item.dishId}
-                  className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '8px 0',
+                    borderBottomWidth: index < cartItems.length - 1 ? 1 : 0,
+                    borderBottomColor: '#f3f4f6',
+                    borderBottomStyle: 'solid'
+                  }}
                 >
-                  <View>
-                    <Text className="block text-base font-medium text-gray-900">
+                  <View style={{ flex: 1 }}>
+                    <Text className="block text-sm font-medium text-gray-900">
                       {item.dishName}
                     </Text>
-                    <Text className="block text-sm text-gray-500">
+                    <Text className="block text-xs text-gray-500">
                       ¥{item.dishPrice} × {item.quantity}
                     </Text>
                   </View>
-                  <Text className="text-lg font-bold text-orange-500">
+                  <Text className="text-sm font-bold text-orange-500">
                     ¥{item.dishPrice * item.quantity}
                   </Text>
                 </View>
@@ -128,13 +128,11 @@ const OrdersPage = () => {
         </View>
 
         {/* 备注 */}
-        <View className="bg-white rounded-xl shadow-sm p-4 mb-4">
-          <Text className="block text-base font-semibold text-gray-900 mb-3">
-            备注
-          </Text>
-          <View className="bg-gray-50 rounded-xl p-4">
+        <View className="bg-white rounded-lg p-3 mb-3">
+          <Text className="block text-sm font-semibold text-gray-900 mb-2">备注</Text>
+          <View className="bg-gray-50 rounded-lg p-3">
             <Input
-              className="w-full bg-transparent text-base"
+              className="w-full bg-transparent text-sm"
               placeholder="请输入备注信息（可选）"
               value={note}
               onInput={(e) => setNote(e.detail.value)}
@@ -146,14 +144,10 @@ const OrdersPage = () => {
 
         {/* 总价 */}
         {cartItems.length > 0 && (
-          <View className="bg-white rounded-xl shadow-sm p-4 mb-20">
-            <View className="flex justify-between items-center">
-              <Text className="block text-base font-semibold text-gray-900">
-                合计
-              </Text>
-              <Text className="text-2xl font-bold text-orange-500">
-                ¥{getTotalPrice()}
-              </Text>
+          <View className="bg-white rounded-lg p-3 mb-16">
+            <View style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text className="block text-sm font-semibold text-gray-900">合计</Text>
+              <Text className="text-xl font-bold text-orange-500">¥{getTotalPrice()}</Text>
             </View>
           </View>
         )}
@@ -161,14 +155,30 @@ const OrdersPage = () => {
 
       {/* 底部提交按钮 */}
       {cartItems.length > 0 && (
-        <View className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50">
+        <View 
+          style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: '#fff',
+            borderTopWidth: 1,
+            borderTopColor: '#e5e5e5',
+            borderTopStyle: 'solid',
+            padding: 12,
+            zIndex: 50
+          }}
+        >
           <View
             onClick={loading ? undefined : handleSubmitOrder}
-            className={`${
-              loading ? 'bg-gray-300' : 'bg-orange-500'
-            } text-white rounded-lg py-3 px-6`}
+            style={{
+              backgroundColor: loading ? '#d1d5db' : '#f97316',
+              borderRadius: 8,
+              paddingTop: 10,
+              paddingBottom: 10
+            }}
           >
-            <Text className="block text-center font-semibold text-base">
+            <Text style={{ color: '#fff', fontWeight: '600', textAlign: 'center', fontSize: 14 }}>
               {loading ? '提交中...' : '提交订单'}
             </Text>
           </View>

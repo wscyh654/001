@@ -248,11 +248,6 @@ const MenuPage = () => {
                               🌶️ {getSpicinessLabel(dish.spiciness)}
                             </Text>
                           )}
-                          {dish.stock < 10 && (
-                            <Text className="text-xs text-orange-500">
-                              仅剩{dish.stock}份
-                            </Text>
-                          )}
                         </View>
                       </View>
                       <View className="flex justify-between items-center">
