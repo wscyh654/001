@@ -385,13 +385,13 @@ const ProfilePage = () => {
               </View>
               <View className="flex flex-row gap-2">
                 <View
-                  className="flex-1 bg-gray-200 rounded-full py-2 items-center"
+                  className="flex-1 bg-gray-200 rounded-full py-2 flex items-center justify-center"
                   onClick={() => { setShowAddWish(false); setNewWishName(''); setNewWishDesc('') }}
                 >
                   <Text className="text-sm text-gray-600">取消</Text>
                 </View>
                 <View
-                  className="flex-1 bg-orange-500 rounded-full py-2 items-center"
+                  className="flex-1 bg-orange-500 rounded-full py-2 flex items-center justify-center"
                   onClick={handleAddWish}
                 >
                   <Text className="text-sm text-white font-semibold">提交</Text>
@@ -482,13 +482,13 @@ const ProfilePage = () => {
               </View>
               <View className="flex flex-row gap-2">
                 <View
-                  className="flex-1 bg-gray-200 rounded-full py-2 items-center"
+                  className="flex-1 bg-gray-200 rounded-full py-2 flex items-center justify-center"
                   onClick={() => { setEditingWish(null); setEditWishName(''); setEditWishDesc('') }}
                 >
                   <Text className="text-sm text-gray-600">取消</Text>
                 </View>
                 <View
-                  className="flex-1 bg-blue-500 rounded-full py-2 items-center"
+                  className="flex-1 bg-blue-500 rounded-full py-2 flex items-center justify-center"
                   onClick={handleUpdateWish}
                 >
                   <Text className="text-sm text-white font-semibold">保存</Text>
