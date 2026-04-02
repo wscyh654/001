@@ -5,16 +5,11 @@ WORKDIR /app
 # 安装 pnpm
 RUN npm install -g pnpm@9
 
-# 复制 package.json 文件
-COPY package.json ./
-COPY server/package.json ./server/
-COPY pnpm-lock.yaml* ./
+# 复制所有文件
+COPY . .
 
 # 安装依赖
 RUN pnpm install --no-frozen-lockfile
-
-# 复制源代码
-COPY server ./server
 
 # 构建
 RUN cd server && pnpm build
