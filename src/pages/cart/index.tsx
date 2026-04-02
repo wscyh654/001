@@ -2,6 +2,7 @@ import { View, Text, ScrollView, Input } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import { Network } from '@/network'
+import { getUserId } from '@/utils/user'
 import './index.css'
 
 interface CartItem {
@@ -96,11 +97,13 @@ const CartPage = () => {
 
     try {
       setSubmitting(true)
+      const userId = getUserId()
       const res = await Network.request({
         url: '/api/orders',
         method: 'POST',
         data: {
           table_number: parseInt(tableNumber),
+          user_id: userId,
           items: cartItems.map(item => ({
             dishId: item.dish_id,
             dishName: item.dish_name,

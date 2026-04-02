@@ -2,6 +2,7 @@ import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import { Network } from '@/network'
+import { getUserId } from '@/utils/user'
 import './index.css'
 
 interface OrderItem {
@@ -31,8 +32,9 @@ const OrdersPage = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true)
+      const userId = getUserId()
       const res = await Network.request({
-        url: '/api/orders',
+        url: `/api/orders?user_id=${userId}`,
         method: 'GET'
       })
       console.log('Orders response:', res.data)

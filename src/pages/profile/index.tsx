@@ -1,7 +1,8 @@
-import { View, Text, ScrollView } from '@tarojs/components'
+import { View, Text, ScrollView, Input } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import { Network } from '@/network'
+import { isAdmin, setAdminStatus, clearAdminStatus } from '@/utils/user'
 import './index.css'
 
 interface Order {
@@ -20,19 +21,31 @@ interface OrderItem {
   price: number
 }
 
+const ADMIN_PASSWORD = 'admin123' // 简单的管理员密码
+
 const ProfilePage = () => {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
+  const [isAdminMode, setIsAdminMode] = useState(false)
+  const [showPasswordInput, setShowPasswordInput] = useState(false)
+  const [password, setPassword] = useState('')
 
   useDidShow(() => {
-    fetchOrders()
+    // 检查是否已经是管理员
+    const adminStatus = isAdmin()
+    setIsAdminMode(adminStatus)
+    if (adminStatus) {
+      fetchOrders(true)
+    } else {
+      setLoading(false)
+    }
   })
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (adminMode: boolean) => {
     try {
       setLoading(true)
       const res = await Network.request({
-        url: '/api/orders',
+        url: `/api/orders?is_admin=${adminMode}`,
         method: 'GET'
       })
       console.log('Orders response:', res.data)
@@ -43,6 +56,65 @@ const ProfilePage = () => {
       console.error('获取订单失败:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleAdminLogin = () => {
+    if (password === ADMIN_PASSWORD) {
+      setAdminStatus(true)
+      setIsAdminMode(true)
+      setShowPasswordInput(false)
+      setPassword('')
+      Taro.showToast({ title: '管理员登录成功', icon: 'success' })
+      fetchOrders(true)
+    } else {
+      Taro.showToast({ title: '密码错误', icon: 'none' })
+    }
+  }
+
+  const handleLogout = () => {
+    clearAdminStatus()
+    setIsAdminMode(false)
+    setOrders([])
+    Taro.showToast({ title: '已退出管理员模式', icon: 'success' })
+  }
+
+  const handleCompleteOrder = async (orderId: string) => {
+    try {
+      const res = await Network.request({
+        url: `/api/orders/${orderId}/status`,
+        method: 'PUT',
+        data: { status: 'completed' }
+      })
+      if (res.data && res.data.code === 200) {
+        Taro.showToast({ title: '订单已完成', icon: 'success' })
+        fetchOrders(true)
+      }
+    } catch (error) {
+      console.error('完成订单失败:', error)
+      Taro.showToast({ title: '操作失败', icon: 'none' })
+    }
+  }
+
+  const handleDeleteOrder = async (orderId: string) => {
+    const result = await Taro.showModal({
+      title: '确认删除',
+      content: '确定要删除这个订单吗？'
+    })
+    if (!result.confirm) return
+
+    try {
+      const res = await Network.request({
+        url: `/api/orders/${orderId}`,
+        method: 'DELETE'
+      })
+      if (res.data && res.data.code === 200) {
+        Taro.showToast({ title: '订单已删除', icon: 'success' })
+        fetchOrders(true)
+      }
+    } catch (error) {
+      console.error('删除订单失败:', error)
+      Taro.showToast({ title: '删除失败', icon: 'none' })
     }
   }
 
@@ -105,13 +177,57 @@ const ProfilePage = () => {
           ))}
         </View>
 
-        {/* 订单需求列表 */}
+        {/* 管理员登录/订单管理 */}
         <View className="bg-white">
-          <View className="px-4 py-3 border-b border-gray-100">
-            <Text className="text-sm font-semibold text-gray-900">订单需求</Text>
+          <View className="px-4 py-3 border-b border-gray-100 flex flex-row justify-between items-center">
+            <Text className="text-sm font-semibold text-gray-900">订单管理</Text>
+            {isAdminMode && (
+              <View
+                className="px-3 py-1 rounded bg-gray-100"
+                onClick={handleLogout}
+              >
+                <Text className="text-xs text-gray-600">退出管理</Text>
+              </View>
+            )}
           </View>
           
-          {loading ? (
+          {!isAdminMode ? (
+            showPasswordInput ? (
+              <View className="p-4">
+                <Text className="text-sm text-gray-600 mb-3">请输入管理员密码</Text>
+                <View className="flex flex-row gap-2">
+                  <View className="flex-1 bg-gray-50 rounded-lg px-3 py-2">
+                    <Input
+                      className="w-full bg-transparent text-sm"
+                      password
+                      placeholder="输入密码"
+                      value={password}
+                      onInput={(e) => setPassword(e.detail.value)}
+                    />
+                  </View>
+                  <View
+                    className="bg-orange-500 rounded-lg px-4 py-2 flex items-center justify-center"
+                    onClick={handleAdminLogin}
+                  >
+                    <Text className="text-white text-sm">确认</Text>
+                  </View>
+                </View>
+                <View
+                  className="mt-2"
+                  onClick={() => { setShowPasswordInput(false); setPassword('') }}
+                >
+                  <Text className="text-xs text-gray-400">取消</Text>
+                </View>
+              </View>
+            ) : (
+              <View
+                className="px-4 py-4 flex items-center justify-center"
+                onClick={() => setShowPasswordInput(true)}
+              >
+                <Text className="text-sm text-orange-500">点击进入管理员模式</Text>
+              </View>
+            )
+          ) : loading ? (
             <View className="flex items-center justify-center py-8">
               <Text className="text-sm text-gray-500">加载中...</Text>
             </View>
@@ -168,14 +284,34 @@ const ProfilePage = () => {
                     </View>
                   )}
 
-                  {/* 总价 */}
+                  {/* 总价和操作 */}
                   <View className="flex flex-row justify-between items-center">
-                    <Text className="text-xs text-gray-500">
-                      共 {order.items.reduce((sum, item) => sum + item.quantity, 0)} 件
-                    </Text>
-                    <Text className="text-sm font-bold text-orange-500">
-                      ¥{order.total_price}
-                    </Text>
+                    <View className="flex flex-row items-center gap-2">
+                      <Text className="text-xs text-gray-500">
+                        共 {order.items.reduce((sum, item) => sum + item.quantity, 0)} 件
+                      </Text>
+                      <Text className="text-sm font-bold text-orange-500">
+                        ¥{order.total_price}
+                      </Text>
+                    </View>
+                    
+                    {/* 操作按钮 */}
+                    <View className="flex flex-row gap-2">
+                      {order.status !== 'completed' && (
+                        <View
+                          className="px-3 py-1 rounded bg-green-500"
+                          onClick={() => handleCompleteOrder(order.id)}
+                        >
+                          <Text className="text-xs text-white">完成</Text>
+                        </View>
+                      )}
+                      <View
+                        className="px-3 py-1 rounded bg-red-500"
+                        onClick={() => handleDeleteOrder(order.id)}
+                      >
+                        <Text className="text-xs text-white">删除</Text>
+                      </View>
+                    </View>
                   </View>
                 </View>
               ))}
