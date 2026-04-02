@@ -10,7 +10,7 @@ interface Dish {
   price: number
   image: string | null
   description: string | null
-  is_new: boolean
+  is_banner: boolean
 }
 
 const HomePage = () => {
@@ -30,10 +30,10 @@ const HomePage = () => {
       })
       console.log('Featured dishes response:', res.data)
       if (res.data && res.data.data) {
-        // 获取新品或前5个菜品作为推荐
+        // 获取设置了 is_banner 的菜品
         const allDishes = res.data.data
-        const newDishes = allDishes.filter((dish: Dish) => dish.is_new && dish.image)
-        setFeaturedDishes(newDishes.length > 0 ? newDishes : allDishes.slice(0, 5))
+        const bannerDishes = allDishes.filter((dish: Dish) => dish.is_banner && dish.image)
+        setFeaturedDishes(bannerDishes)
       }
     } catch (error) {
       console.error('获取推荐菜品失败:', error)
@@ -86,14 +86,7 @@ const HomePage = () => {
                   )}
                   {/* 菜品信息遮罩 */}
                   <View className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
-                    <View className="flex items-center gap-2 mb-2">
-                      <Text className="text-white text-2xl font-bold">{dish.name}</Text>
-                      {dish.is_new && (
-                        <View className="bg-orange-500 px-2 py-1 rounded">
-                          <Text className="text-white text-xs">新品</Text>
-                        </View>
-                      )}
-                    </View>
+                    <Text className="text-white text-2xl font-bold mb-2">{dish.name}</Text>
                     {dish.description && (
                       <Text className="text-white/80 text-sm mb-2" numberOfLines={2}>
                         {dish.description}

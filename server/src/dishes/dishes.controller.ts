@@ -65,6 +65,7 @@ export class DishesController {
     specifications: any;
     isNew: boolean;
     isAvailable: boolean;
+    isBanner: boolean;
   }>) {
     const dish = await this.dishesService.update(id, updateDishDto);
     return {

@@ -5,8 +5,10 @@ export default defineAppConfig({
     'pages/cart/index',
     'pages/orders/index',
     'pages/messages/index',
+    'pages/profile/index',
     'pages/dish-manage/index',
-    'pages/dish-detail/index'
+    'pages/dish-detail/index',
+    'pages/home-manage/index'
   ],
   window: {
     backgroundTextStyle: 'light',
@@ -43,6 +45,12 @@ export default defineAppConfig({
         text: '留言',
         iconPath: './assets/tabbar/message-square.png',
         selectedIconPath: './assets/tabbar/message-square-active.png',
+      },
+      {
+        pagePath: 'pages/profile/index',
+        text: '我的',
+        iconPath: './assets/tabbar/user.png',
+        selectedIconPath: './assets/tabbar/user-active.png',
       }
     ]
   }

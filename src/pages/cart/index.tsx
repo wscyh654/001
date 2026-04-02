@@ -103,8 +103,16 @@ const CartPage = () => {
       })
       
       if (res.data && res.data.code === 200) {
-        Taro.showToast({ title: '下单成功', icon: 'success' })
+        Taro.showToast({ 
+          title: '订单已提交，静候美味', 
+          icon: 'success',
+          duration: 2000
+        })
         fetchCartItems()
+        // 跳转到订单页
+        setTimeout(() => {
+          Taro.switchTab({ url: '/pages/orders/index' })
+        }, 1500)
       }
     } catch (error) {
       console.error('下单失败:', error)

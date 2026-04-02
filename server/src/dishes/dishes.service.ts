@@ -95,6 +95,7 @@ export class DishesService {
     specifications: any;
     isNew: boolean;
     isAvailable: boolean;
+    isBanner: boolean;
   }>) {
     const client = getSupabaseClient();
     const updateData: Record<string, any> = {};
@@ -113,6 +114,7 @@ export class DishesService {
     if (updateDishDto.specifications !== undefined) updateData.specifications = updateDishDto.specifications;
     if (updateDishDto.isNew !== undefined) updateData.is_new = updateDishDto.isNew;
     if (updateDishDto.isAvailable !== undefined) updateData.is_available = updateDishDto.isAvailable;
+    if (updateDishDto.isBanner !== undefined) updateData.is_banner = updateDishDto.isBanner;
 
     const { data, error } = await client
       .from('dishes')
