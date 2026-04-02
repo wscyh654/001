@@ -51,7 +51,6 @@ const MenuPage = () => {
   const [loading, setLoading] = useState(true)
   const [selectedCuisine, setSelectedCuisine] = useState('all')
   const [selectedMethod, setSelectedMethod] = useState('all')
-  const [newDishes, setNewDishes] = useState<Dish[]>([])
   const [cartItems, setCartItems] = useState<CartItem[]>([])
 
   useLoad(() => {
@@ -71,9 +70,7 @@ const MenuPage = () => {
       })
       console.log('Dishes response:', res.data)
       if (res.data && res.data.data) {
-        const allDishes = res.data.data
-        setDishes(allDishes)
-        setNewDishes(allDishes.filter((dish: Dish) => dish.is_new))
+        setDishes(res.data.data)
       }
     } catch (error) {
       console.error('获取菜品失败:', error)
@@ -183,45 +180,9 @@ const MenuPage = () => {
   }
 
   return (
-    <View style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#f9fafb', overflow: 'hidden' }}>
-      {/* 顶部新品轮播 */}
-      {newDishes.length > 0 && (
-        <ScrollView scrollX style={{ backgroundColor: '#fff', marginBottom: 8, flexShrink: 0 }}>
-          <View style={{ display: 'flex', flexDirection: 'row', padding: 12, gap: 12 }}>
-            {newDishes.map((dish) => (
-              <View
-                key={dish.id}
-                style={{ flexShrink: 0, width: 120, backgroundColor: '#fff7ed', borderRadius: 12, padding: 12, boxSizing: 'border-box' }}
-                onClick={() => handleDishClick(dish.id)}
-              >
-                <View style={{ width: '100%', height: 80, backgroundColor: '#f3f4f6', borderRadius: 8, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                  {dish.image ? (
-                    <Image
-                      src={dish.image}
-                      style={{ width: '100%', height: '100%', borderRadius: 8 }}
-                      mode="aspectFill"
-                    />
-                  ) : (
-                    <Text style={{ fontSize: 28 }}>🍽️</Text>
-                  )}
-                </View>
-                <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827' }} numberOfLines={1}>
-                  {dish.name}
-                </Text>
-                <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                  <View style={{ backgroundColor: '#f97316', paddingLeft: 6, paddingRight: 6, paddingTop: 2, paddingBottom: 2, borderRadius: 4 }}>
-                    <Text style={{ fontSize: 11, color: '#fff' }}>新品</Text>
-                  </View>
-                  <Text style={{ fontSize: 13, fontWeight: '700', color: '#f97316' }}>¥{dish.price}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        </ScrollView>
-      )}
-
+    <View className="flex flex-col h-full bg-gray-50">
       {/* 主体：左侧分类 + 右侧菜品 */}
-      <View style={{ display: 'flex', flexDirection: 'row', flex: 1, overflow: 'hidden' }}>
+      <View className="flex flex-row flex-1 overflow-hidden">
         {/* 左侧分类栏 */}
         <ScrollView scrollY style={{ width: 80, backgroundColor: '#fff', flexShrink: 0 }}>
           <View style={{ paddingTop: 8, paddingBottom: 8 }}>
