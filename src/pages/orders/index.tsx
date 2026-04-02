@@ -68,14 +68,14 @@ const OrdersPage = () => {
   }
 
   return (
-    <View className="flex flex-col h-full bg-gray-50">
-      <ScrollView scrollY className="flex-1 p-3">
+    <View style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#f9fafb', overflow: 'hidden' }}>
+      <ScrollView scrollY style={{ flex: 1, padding: 12 }}>
         {/* 桌号输入 */}
-        <View className="bg-white rounded-lg p-3 mb-3">
-          <Text className="block text-sm font-semibold text-gray-900 mb-2">桌号</Text>
-          <View className="bg-gray-50 rounded-lg px-3 py-2">
+        <View style={{ backgroundColor: '#fff', borderRadius: 8, padding: 12, marginBottom: 12, boxSizing: 'border-box' }}>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827', marginBottom: 8 }}>桌号</Text>
+          <View style={{ backgroundColor: '#f9fafb', borderRadius: 8, paddingLeft: 12, paddingRight: 12, paddingTop: 8, paddingBottom: 8 }}>
             <Input
-              className="w-full bg-transparent text-sm"
+              style={{ width: '100%', backgroundColor: 'transparent', fontSize: 13 }}
               placeholder="请输入桌号"
               value={tableNumber}
               onInput={(e) => setTableNumber(e.detail.value)}
@@ -86,14 +86,14 @@ const OrdersPage = () => {
         </View>
 
         {/* 购物车列表 */}
-        <View className="bg-white rounded-lg p-3 mb-3">
-          <Text className="block text-sm font-semibold text-gray-900 mb-2">
+        <View style={{ backgroundColor: '#fff', borderRadius: 8, padding: 12, marginBottom: 12, boxSizing: 'border-box' }}>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827', marginBottom: 8 }}>
             购物车 ({getTotalQuantity()} 件)
           </Text>
           {cartItems.length === 0 ? (
-            <View className="flex flex-col items-center justify-center py-6">
-              <Text className="text-2xl mb-2">🛒</Text>
-              <Text className="block text-sm text-gray-500">购物车为空</Text>
+            <View style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: 24, paddingBottom: 24 }}>
+              <Text style={{ fontSize: 24, marginBottom: 8 }}>🛒</Text>
+              <Text style={{ fontSize: 13, color: '#6b7280' }}>购物车为空</Text>
             </View>
           ) : (
             <View>
@@ -104,21 +104,22 @@ const OrdersPage = () => {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    padding: '8px 0',
+                    paddingTop: 8,
+                    paddingBottom: 8,
                     borderBottomWidth: index < cartItems.length - 1 ? 1 : 0,
                     borderBottomColor: '#f3f4f6',
                     borderBottomStyle: 'solid'
                   }}
                 >
-                  <View style={{ flex: 1 }}>
-                    <Text className="block text-sm font-medium text-gray-900">
+                  <View style={{ flex: 1, marginRight: 8, minWidth: 0 }}>
+                    <Text style={{ fontSize: 13, fontWeight: '500', color: '#111827' }} numberOfLines={1}>
                       {item.dishName}
                     </Text>
-                    <Text className="block text-xs text-gray-500">
+                    <Text style={{ fontSize: 11, color: '#6b7280' }}>
                       ¥{item.dishPrice} × {item.quantity}
                     </Text>
                   </View>
-                  <Text className="text-sm font-bold text-orange-500">
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: '#f97316', flexShrink: 0 }}>
                     ¥{item.dishPrice * item.quantity}
                   </Text>
                 </View>
@@ -128,11 +129,11 @@ const OrdersPage = () => {
         </View>
 
         {/* 备注 */}
-        <View className="bg-white rounded-lg p-3 mb-3">
-          <Text className="block text-sm font-semibold text-gray-900 mb-2">备注</Text>
-          <View className="bg-gray-50 rounded-lg p-3">
+        <View style={{ backgroundColor: '#fff', borderRadius: 8, padding: 12, marginBottom: 12, boxSizing: 'border-box' }}>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827', marginBottom: 8 }}>备注</Text>
+          <View style={{ backgroundColor: '#f9fafb', borderRadius: 8, padding: 12 }}>
             <Input
-              className="w-full bg-transparent text-sm"
+              style={{ width: '100%', backgroundColor: 'transparent', fontSize: 13 }}
               placeholder="请输入备注信息（可选）"
               value={note}
               onInput={(e) => setNote(e.detail.value)}
@@ -144,10 +145,10 @@ const OrdersPage = () => {
 
         {/* 总价 */}
         {cartItems.length > 0 && (
-          <View className="bg-white rounded-lg p-3 mb-16">
+          <View style={{ backgroundColor: '#fff', borderRadius: 8, padding: 12, marginBottom: 64, boxSizing: 'border-box' }}>
             <View style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text className="block text-sm font-semibold text-gray-900">合计</Text>
-              <Text className="text-xl font-bold text-orange-500">¥{getTotalPrice()}</Text>
+              <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827' }}>合计</Text>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: '#f97316' }}>¥{getTotalPrice()}</Text>
             </View>
           </View>
         )}
@@ -163,12 +164,13 @@ const OrdersPage = () => {
             right: 0,
             backgroundColor: '#fff',
             borderTopWidth: 1,
-            borderTopColor: '#e5e5e5',
+            borderTopColor: '#e5e7eb',
             borderTopStyle: 'solid',
             padding: 12,
             paddingLeft: 16,
             paddingRight: 16,
-            zIndex: 50
+            zIndex: 50,
+            boxSizing: 'border-box'
           }}
         >
           <View

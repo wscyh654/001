@@ -121,77 +121,89 @@ const CartPage = () => {
   }
 
   return (
-    <View className="flex flex-col h-full bg-gray-50">
-      <ScrollView scrollY className="flex-1 p-4">
+    <View style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#f9fafb', overflow: 'hidden' }}>
+      <ScrollView scrollY style={{ flex: 1, padding: 12 }}>
         {loading ? (
-          <View className="flex flex-col items-center justify-center py-12">
-            <Text className="text-base text-gray-500">加载中...</Text>
+          <View style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: 48 }}>
+            <Text style={{ fontSize: 14, color: '#6b7280' }}>加载中...</Text>
           </View>
         ) : cartItems.length === 0 ? (
-          <View className="flex flex-col items-center justify-center py-12">
-            <View className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-              <Text className="text-3xl">🛒</Text>
+          <View style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: 48 }}>
+            <View style={{ width: 64, height: 64, backgroundColor: '#f3f4f6', borderRadius: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+              <Text style={{ fontSize: 28 }}>🛒</Text>
             </View>
-            <Text className="block text-base text-gray-500 mb-4">购物车为空</Text>
+            <Text style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>购物车为空</Text>
             <View
               onClick={() => Taro.switchTab({ url: '/pages/menu/index' })}
-              className="bg-orange-500 text-white rounded-lg py-2 px-6"
+              style={{ backgroundColor: '#f97316', borderRadius: 8, paddingTop: 8, paddingBottom: 8, paddingLeft: 24, paddingRight: 24 }}
             >
-              <Text className="block text-center font-semibold text-sm">去点菜</Text>
+              <Text style={{ color: '#fff', fontWeight: '600', fontSize: 13 }}>去点菜</Text>
             </View>
           </View>
         ) : (
-          <View className="space-y-3">
+          <View>
             {cartItems.map((item) => (
-              <View key={item.id} className="bg-white rounded-xl shadow-sm p-4">
-                <View className="flex justify-between items-start mb-2">
-                  <View className="flex-1">
-                    <Text className="block text-base font-semibold text-gray-900">
+              <View 
+                key={item.id} 
+                style={{ 
+                  backgroundColor: '#fff', 
+                  borderRadius: 12, 
+                  padding: 12, 
+                  marginBottom: 12,
+                  boxSizing: 'border-box'
+                }}
+              >
+                <View style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                  <View style={{ flex: 1, marginRight: 8, minWidth: 0 }}>
+                    <Text style={{ fontSize: 15, fontWeight: '600', color: '#111827' }} numberOfLines={1}>
                       {item.dish_name}
                     </Text>
-                    <Text className="block text-sm text-gray-500 mt-1">
+                    <Text style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }} numberOfLines={1}>
                       {getSpecsText(item.specs)}
                     </Text>
                     {item.note && (
-                      <View className="mt-1 bg-orange-50 px-2 py-1 rounded inline-block">
-                        <Text className="text-xs text-orange-600">留言: {item.note}</Text>
+                      <View style={{ marginTop: 4, backgroundColor: '#fff7ed', paddingLeft: 6, paddingRight: 6, paddingTop: 2, paddingBottom: 2, borderRadius: 4, alignSelf: 'flex-start' }}>
+                        <Text style={{ fontSize: 11, color: '#ea580c' }}>留言: {item.note}</Text>
                       </View>
                     )}
                   </View>
-                  <Text className="text-lg font-bold text-orange-500">
+                  <Text style={{ fontSize: 16, fontWeight: '700', color: '#f97316', flexShrink: 0 }}>
                     ¥{(item.price * item.quantity).toFixed(2)}
                   </Text>
                 </View>
 
-                <View className="flex justify-between items-center mt-3">
-                  <Text className="text-sm text-gray-600">¥{item.price}</Text>
+                <View style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+                  <Text style={{ fontSize: 13, color: '#4b5563' }}>¥{item.price}</Text>
                   
-                  <View className="flex items-center gap-3">
+                  <View style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     {/* 数量控制 */}
-                    <View className="flex items-center gap-2">
+                    <View style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <View
+                        hoverClass="opacity-70"
                         onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                        className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center"
+                        style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                       >
-                        <Text className="text-lg text-gray-600">-</Text>
+                        <Text style={{ fontSize: 16, color: '#4b5563' }}>-</Text>
                       </View>
-                      <Text className="text-base font-semibold text-gray-900 min-w-20 text-center">
+                      <Text style={{ fontSize: 15, fontWeight: '600', color: '#111827', width: 24, textAlign: 'center' }}>
                         {item.quantity}
                       </Text>
                       <View
+                        hoverClass="opacity-70"
                         onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                        className="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center"
+                        style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: '#fff7ed', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                       >
-                        <Text className="text-lg text-orange-600">+</Text>
+                        <Text style={{ fontSize: 16, color: '#ea580c' }}>+</Text>
                       </View>
                     </View>
 
                     {/* 删除按钮 */}
                     <View
+                      hoverClass="opacity-70"
                       onClick={() => handleDeleteItem(item.id)}
-                      className="ml-2 px-3 py-1 rounded bg-red-50"
+                      style={{ paddingLeft: 8, paddingRight: 8, paddingTop: 4, paddingBottom: 4, borderRadius: 4, backgroundColor: '#fef2f2' }}
                     >
-                      <Text className="text-sm text-red-500">删除</Text>
+                      <Text style={{ fontSize: 12, color: '#ef4444' }}>删除</Text>
                     </View>
                   </View>
                 </View>
@@ -203,21 +215,38 @@ const CartPage = () => {
 
       {/* 底部结算栏 */}
       {cartItems.length > 0 && (
-        <View className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50">
-          <View className="flex justify-between items-center">
+        <View 
+          style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: '#fff',
+            borderTopWidth: 1,
+            borderTopColor: '#e5e7eb',
+            borderTopStyle: 'solid',
+            padding: 12,
+            paddingLeft: 16,
+            paddingRight: 16,
+            zIndex: 50,
+            boxSizing: 'border-box'
+          }}
+        >
+          <View style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <View>
-              <Text className="block text-sm text-gray-500">
+              <Text style={{ fontSize: 12, color: '#6b7280' }}>
                 共 {cartItems.reduce((sum, item) => sum + item.quantity, 0)} 件
               </Text>
-              <Text className="text-2xl font-bold text-orange-500">
+              <Text style={{ fontSize: 20, fontWeight: '700', color: '#f97316' }}>
                 ¥{calculateTotal().toFixed(2)}
               </Text>
             </View>
             <View
+              hoverClass="opacity-80"
               onClick={handleCheckout}
-              className="bg-orange-500 text-white rounded-lg py-3 px-8"
+              style={{ backgroundColor: '#f97316', borderRadius: 8, paddingTop: 10, paddingBottom: 10, paddingLeft: 32, paddingRight: 32 }}
             >
-              <Text className="block text-center font-semibold text-base">去结算</Text>
+              <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>去结算</Text>
             </View>
           </View>
         </View>
