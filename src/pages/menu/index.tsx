@@ -1,5 +1,5 @@
 import { View, Text, Image, ScrollView } from '@tarojs/components'
-import Taro, { useLoad } from '@tarojs/taro'
+import Taro, { useLoad, useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import { Network } from '@/network'
 import './index.css'
@@ -18,6 +18,14 @@ interface Dish {
   temperature: string | null
   is_new: boolean
   is_available: boolean
+}
+
+interface CartItem {
+  id: string
+  dish_id: string
+  dish_name: string
+  price: number
+  quantity: number
 }
 
 const CUISINE_TYPES = [
@@ -44,9 +52,14 @@ const MenuPage = () => {
   const [selectedCuisine, setSelectedCuisine] = useState('all')
   const [selectedMethod, setSelectedMethod] = useState('all')
   const [newDishes, setNewDishes] = useState<Dish[]>([])
+  const [cartItems, setCartItems] = useState<CartItem[]>([])
 
   useLoad(() => {
     fetchDishes()
+  })
+
+  useDidShow(() => {
+    fetchCartItems()
   })
 
   const fetchDishes = async () => {
@@ -60,7 +73,6 @@ const MenuPage = () => {
       if (res.data && res.data.data) {
         const allDishes = res.data.data
         setDishes(allDishes)
-        // 筛选新品
         setNewDishes(allDishes.filter((dish: Dish) => dish.is_new))
       }
     } catch (error) {
@@ -68,6 +80,25 @@ const MenuPage = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const fetchCartItems = async () => {
+    try {
+      const res = await Network.request({
+        url: '/api/cart',
+        method: 'GET'
+      })
+      if (res.data && res.data.data) {
+        setCartItems(res.data.data)
+      }
+    } catch (error) {
+      console.error('获取购物车失败:', error)
+    }
+  }
+
+  const getCartQuantity = (dishId: string) => {
+    const cartItem = cartItems.find(item => item.dish_id === dishId)
+    return cartItem ? cartItem.quantity : 0
   }
 
   const filteredDishes = dishes.filter(dish => {
@@ -108,12 +139,49 @@ const MenuPage = () => {
       })
       
       if (res.data && res.data.code === 200) {
-        Taro.showToast({ title: '已加入购物车', icon: 'success' })
+        await fetchCartItems()
+        Taro.showToast({ title: '已加入购物车', icon: 'success', duration: 1000 })
       }
     } catch (error) {
       console.error('加入购物车失败:', error)
       Taro.showToast({ title: '加入失败', icon: 'none' })
     }
+  }
+
+  const handleRemoveFromCart = async (dish: Dish, e: any) => {
+    e.stopPropagation()
+    const cartItem = cartItems.find(item => item.dish_id === dish.id)
+    if (!cartItem) return
+
+    try {
+      if (cartItem.quantity <= 1) {
+        // 删除
+        const res = await Network.request({
+          url: `/api/cart/${cartItem.id}`,
+          method: 'DELETE'
+        })
+        if (res.data && res.data.code === 200) {
+          await fetchCartItems()
+        }
+      } else {
+        // 减少数量
+        const res = await Network.request({
+          url: `/api/cart/${cartItem.id}`,
+          method: 'PUT',
+          data: { quantity: cartItem.quantity - 1 }
+        })
+        if (res.data && res.data.code === 200) {
+          await fetchCartItems()
+        }
+      }
+    } catch (error) {
+      console.error('更新购物车失败:', error)
+      Taro.showToast({ title: '操作失败', icon: 'none' })
+    }
+  }
+
+  const getTotalCartCount = () => {
+    return cartItems.reduce((sum, item) => sum + item.quantity, 0)
   }
 
   return (
@@ -231,79 +299,201 @@ const MenuPage = () => {
             </View>
           ) : (
             <View className="space-y-3">
-              {filteredDishes.map((dish) => (
-                <View
-                  key={dish.id}
-                  className="bg-white rounded-xl shadow-sm p-3"
-                  onClick={() => handleDishClick(dish.id)}
-                >
-                  <View className="flex flex-row gap-3">
-                    <View className="w-20 h-20 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center">
-                      {dish.image ? (
-                        <Image
-                          src={dish.image}
-                          className="w-full h-full rounded-lg"
-                          mode="aspectFill"
-                        />
-                      ) : (
-                        <Text className="text-3xl">🍜</Text>
-                      )}
-                    </View>
-                    <View className="flex-1 flex flex-col justify-between">
-                      <View>
-                        <View className="flex items-center gap-2 mb-1">
-                          <Text className="block text-base font-semibold text-gray-900">
-                            {dish.name}
-                          </Text>
-                          {dish.is_new && (
-                            <View className="bg-orange-500 text-white px-2 py-0.5 rounded text-xs">
-                              <Text className="text-xs">新品</Text>
-                            </View>
-                          )}
-                        </View>
-                        {dish.description && (
-                          <Text className="block text-sm text-gray-500 truncate">
-                            {dish.description}
-                          </Text>
+              {filteredDishes.map((dish) => {
+                const quantity = getCartQuantity(dish.id)
+                return (
+                  <View
+                    key={dish.id}
+                    className="bg-white rounded-xl shadow-sm p-3"
+                    onClick={() => handleDishClick(dish.id)}
+                  >
+                    <View className="flex flex-row gap-3">
+                      <View className="w-20 h-20 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center">
+                        {dish.image ? (
+                          <Image
+                            src={dish.image}
+                            className="w-full h-full rounded-lg"
+                            mode="aspectFill"
+                          />
+                        ) : (
+                          <Text className="text-3xl">🍜</Text>
                         )}
-                        <View className="flex items-center gap-2 mt-1">
-                          {dish.spiciness && dish.spiciness !== 'none' && (
-                            <Text className="text-xs text-red-500">
-                              🌶️ {getSpicinessLabel(dish.spiciness)}
+                      </View>
+                      <View className="flex-1 flex flex-col justify-between">
+                        <View>
+                          <View className="flex items-center gap-2 mb-1">
+                            <Text className="block text-base font-semibold text-gray-900">
+                              {dish.name}
+                            </Text>
+                            {dish.is_new && (
+                              <View className="bg-orange-500 text-white px-2 py-0.5 rounded text-xs">
+                                <Text className="text-xs">新品</Text>
+                              </View>
+                            )}
+                          </View>
+                          {dish.description && (
+                            <Text className="block text-sm text-gray-500 truncate">
+                              {dish.description}
                             </Text>
                           )}
+                          <View className="flex items-center gap-2 mt-1">
+                            {dish.spiciness && dish.spiciness !== 'none' && (
+                              <Text className="text-xs text-red-500">
+                                🌶️ {getSpicinessLabel(dish.spiciness)}
+                              </Text>
+                            )}
+                          </View>
                         </View>
-                      </View>
-                      <View className="flex justify-between items-center">
-                        <Text className="text-lg font-bold text-orange-500">
-                          ¥{dish.price}
-                        </Text>
-                        <View
-                          hoverClass="opacity-80"
-                          onClick={(e) => handleAddToCart(dish, e)}
-                          style={{
-                            backgroundColor: '#f97316',
-                            borderRadius: 6,
-                            paddingLeft: 12,
-                            paddingRight: 12,
-                            paddingTop: 6,
-                            paddingBottom: 6,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}
-                        >
-                          <Text style={{ color: '#fff', fontWeight: '600', fontSize: 13 }}>点单</Text>
+                        <View className="flex justify-between items-center">
+                          <Text className="text-lg font-bold text-orange-500">
+                            ¥{dish.price}
+                          </Text>
+                          
+                          {/* 数量控制区域 */}
+                          {quantity > 0 ? (
+                            <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                              {/* 减号按钮 */}
+                              <View
+                                hoverClass="opacity-70"
+                                onClick={(e) => handleRemoveFromCart(dish, e)}
+                                style={{
+                                  width: 28,
+                                  height: 28,
+                                  borderRadius: 14,
+                                  backgroundColor: '#fff7ed',
+                                  border: '1px solid #f97316',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}
+                              >
+                                <Text style={{ color: '#f97316', fontSize: 16, fontWeight: '600' }}>-</Text>
+                              </View>
+                              {/* 数量 */}
+                              <Text style={{ fontSize: 14, fontWeight: '600', color: '#374151', minWidth: 20, textAlign: 'center' }}>
+                                {quantity}
+                              </Text>
+                              {/* 加号按钮 */}
+                              <View
+                                hoverClass="opacity-70"
+                                onClick={(e) => handleAddToCart(dish, e)}
+                                style={{
+                                  width: 28,
+                                  height: 28,
+                                  borderRadius: 14,
+                                  backgroundColor: '#f97316',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}
+                              >
+                                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>+</Text>
+                              </View>
+                            </View>
+                          ) : (
+                            <View
+                              hoverClass="opacity-80"
+                              onClick={(e) => handleAddToCart(dish, e)}
+                              style={{
+                                backgroundColor: '#f97316',
+                                borderRadius: 6,
+                                paddingLeft: 12,
+                                paddingRight: 12,
+                                paddingTop: 6,
+                                paddingBottom: 6,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}
+                            >
+                              <Text style={{ color: '#fff', fontWeight: '600', fontSize: 13 }}>点单</Text>
+                            </View>
+                          )}
                         </View>
                       </View>
                     </View>
                   </View>
-                </View>
-              ))}
+                )
+              })}
             </View>
           )}
         </ScrollView>
       </View>
+
+      {/* 底部购物车栏 */}
+      {getTotalCartCount() > 0 && (
+        <View 
+          style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: '#fff',
+            borderTopWidth: 1,
+            borderTopColor: '#e5e5e5',
+            borderTopStyle: 'solid',
+            padding: 10,
+            paddingLeft: 16,
+            paddingRight: 16,
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            zIndex: 100
+          }}
+        >
+          <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+            <View
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                backgroundColor: '#f97316',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative'
+              }}
+              onClick={() => Taro.switchTab({ url: '/pages/cart/index' })}
+            >
+              <Text style={{ fontSize: 20 }}>🛒</Text>
+              <View
+                style={{
+                  position: 'absolute',
+                  top: -4,
+                  right: -4,
+                  minWidth: 18,
+                  height: 18,
+                  borderRadius: 9,
+                  backgroundColor: '#ef4444',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Text style={{ color: '#fff', fontSize: 11, fontWeight: '600' }}>{getTotalCartCount()}</Text>
+              </View>
+            </View>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#f97316', marginLeft: 12 }}>
+              ¥{cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}
+            </Text>
+          </View>
+          <View
+            hoverClass="opacity-80"
+            onClick={() => Taro.switchTab({ url: '/pages/cart/index' })}
+            style={{
+              backgroundColor: '#f97316',
+              borderRadius: 20,
+              paddingLeft: 24,
+              paddingRight: 24,
+              paddingTop: 10,
+              paddingBottom: 10
+            }}
+          >
+            <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>去结算</Text>
+          </View>
+        </View>
+      )}
     </View>
   )
 }
