@@ -166,6 +166,8 @@ const OrdersPage = () => {
             borderTopColor: '#e5e5e5',
             borderTopStyle: 'solid',
             padding: 12,
+            paddingLeft: 16,
+            paddingRight: 16,
             zIndex: 50
           }}
         >

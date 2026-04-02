@@ -92,6 +92,30 @@ const MenuPage = () => {
     })
   }
 
+  const handleAddToCart = async (dish: Dish, e: any) => {
+    e.stopPropagation()
+    try {
+      const res = await Network.request({
+        url: '/api/cart',
+        method: 'POST',
+        data: {
+          dishId: dish.id,
+          dishName: dish.name,
+          price: dish.price,
+          quantity: 1,
+          specs: {}
+        }
+      })
+      
+      if (res.data && res.data.code === 200) {
+        Taro.showToast({ title: '已加入购物车', icon: 'success' })
+      }
+    } catch (error) {
+      console.error('加入购物车失败:', error)
+      Taro.showToast({ title: '加入失败', icon: 'none' })
+    }
+  }
+
   return (
     <View className="flex flex-col h-full bg-gray-50">
       {/* 顶部管理入口 */}
@@ -256,10 +280,7 @@ const MenuPage = () => {
                         </Text>
                         <View
                           hoverClass="opacity-80"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleDishClick(dish.id)
-                          }}
+                          onClick={(e) => handleAddToCart(dish, e)}
                           style={{
                             backgroundColor: '#f97316',
                             borderRadius: 6,
