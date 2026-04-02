@@ -53,9 +53,9 @@ const HomePage = () => {
   return (
     <View className="flex flex-col h-full bg-gray-50">
       {/* 顶部大图轮播 */}
-      <View className="flex-1 relative">
+      <View style={{ height: '42vh', minHeight: '200px', maxHeight: '360px' }}>
         {loading ? (
-          <View className="flex items-center justify-center h-full">
+          <View className="flex items-center justify-center h-full bg-gray-100">
             <Text className="text-gray-500">加载中...</Text>
           </View>
         ) : banners.length > 0 ? (
@@ -75,10 +75,20 @@ const HomePage = () => {
                     src={banner.image}
                     mode="aspectFill"
                     className="w-full h-full"
+                    style={{ display: 'block' }}
                   />
                   {banner.title && (
-                    <View className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
-                      <Text className="text-white text-2xl font-bold">{banner.title}</Text>
+                    <View 
+                      style={{ 
+                        position: 'absolute', 
+                        bottom: 0, 
+                        left: 0, 
+                        right: 0, 
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)',
+                        padding: '16px'
+                      }}
+                    >
+                      <Text style={{ color: 'white', fontSize: '20px', fontWeight: 'bold' }}>{banner.title}</Text>
                     </View>
                   )}
                 </View>
@@ -94,7 +104,41 @@ const HomePage = () => {
         )}
       </View>
 
+      {/* 快捷功能入口 */}
+      <View className="bg-white mx-3 mt-3 rounded-xl p-4">
+        <View className="flex flex-row justify-around">
+          <View 
+            className="flex flex-col items-center"
+            onClick={handleStartOrder}
+          >
+            <View className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mb-2">
+              <Text className="text-2xl">🍽️</Text>
+            </View>
+            <Text className="text-sm text-gray-700">菜单点餐</Text>
+          </View>
+          <View 
+            className="flex flex-col items-center"
+            onClick={() => Taro.switchTab({ url: '/pages/cart/index' })}
+          >
+            <View className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-2">
+              <Text className="text-2xl">🛒</Text>
+            </View>
+            <Text className="text-sm text-gray-700">购物车</Text>
+          </View>
+          <View 
+            className="flex flex-col items-center"
+            onClick={() => Taro.switchTab({ url: '/pages/orders/index' })}
+          >
+            <View className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+              <Text className="text-2xl">📋</Text>
+            </View>
+            <Text className="text-sm text-gray-700">我的订单</Text>
+          </View>
+        </View>
+      </View>
+
       {/* 底部开始点菜按钮 */}
+      <View className="flex-1" />
       <View className="bg-white p-4 border-t border-gray-200">
         <View
           hoverClass="opacity-80"
