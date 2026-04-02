@@ -155,7 +155,6 @@ const MenuPage = () => {
 
     try {
       if (cartItem.quantity <= 1) {
-        // 删除
         const res = await Network.request({
           url: `/api/cart/${cartItem.id}`,
           method: 'DELETE'
@@ -164,7 +163,6 @@ const MenuPage = () => {
           await fetchCartItems()
         }
       } else {
-        // 减少数量
         const res = await Network.request({
           url: `/api/cart/${cartItem.id}`,
           method: 'PUT',
@@ -185,45 +183,36 @@ const MenuPage = () => {
   }
 
   return (
-    <View className="flex flex-col h-full bg-gray-50">
-      {/* 顶部管理入口 */}
-      <View
-        className="bg-orange-500 px-4 py-2 flex items-center justify-between"
-        onClick={() => Taro.navigateTo({ url: '/pages/dish-manage/index' })}
-      >
-        <Text className="text-white text-sm">点击添加新菜品和管理菜品信息</Text>
-        <Text className="text-white text-lg">+</Text>
-      </View>
-
+    <View style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#f9fafb', overflow: 'hidden' }}>
       {/* 顶部新品轮播 */}
       {newDishes.length > 0 && (
-        <ScrollView scrollX className="bg-white mb-2">
-          <View className="flex flex-row p-3 gap-3">
+        <ScrollView scrollX style={{ backgroundColor: '#fff', marginBottom: 8, flexShrink: 0 }}>
+          <View style={{ display: 'flex', flexDirection: 'row', padding: 12, gap: 12 }}>
             {newDishes.map((dish) => (
               <View
                 key={dish.id}
-                className="flex-shrink-0 w-32 bg-orange-50 rounded-xl p-3"
+                style={{ flexShrink: 0, width: 120, backgroundColor: '#fff7ed', borderRadius: 12, padding: 12, boxSizing: 'border-box' }}
                 onClick={() => handleDishClick(dish.id)}
               >
-                <View className="w-full h-20 bg-gray-100 rounded-lg mb-2 flex items-center justify-center">
+                <View style={{ width: '100%', height: 80, backgroundColor: '#f3f4f6', borderRadius: 8, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                   {dish.image ? (
                     <Image
                       src={dish.image}
-                      className="w-full h-full rounded-lg"
+                      style={{ width: '100%', height: '100%', borderRadius: 8 }}
                       mode="aspectFill"
                     />
                   ) : (
-                    <Text className="text-3xl">🍽️</Text>
+                    <Text style={{ fontSize: 28 }}>🍽️</Text>
                   )}
                 </View>
-                <Text className="block text-sm font-semibold text-gray-900 truncate">
+                <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827' }} numberOfLines={1}>
                   {dish.name}
                 </Text>
-                <View className="flex items-center gap-1 mt-1">
-                  <View className="bg-orange-500 text-white px-2 py-0.5 rounded text-xs">
-                    <Text className="text-xs">新品</Text>
+                <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                  <View style={{ backgroundColor: '#f97316', paddingLeft: 6, paddingRight: 6, paddingTop: 2, paddingBottom: 2, borderRadius: 4 }}>
+                    <Text style={{ fontSize: 11, color: '#fff' }}>新品</Text>
                   </View>
-                  <Text className="text-sm font-bold text-orange-500">¥{dish.price}</Text>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: '#f97316' }}>¥{dish.price}</Text>
                 </View>
               </View>
             ))}
@@ -232,50 +221,60 @@ const MenuPage = () => {
       )}
 
       {/* 主体：左侧分类 + 右侧菜品 */}
-      <View className="flex flex-1">
+      <View style={{ display: 'flex', flexDirection: 'row', flex: 1, overflow: 'hidden' }}>
         {/* 左侧分类栏 */}
-        <ScrollView scrollY className="w-24 bg-white flex-shrink-0">
-          <View className="py-2">
-            <Text className="block text-xs font-semibold text-gray-500 px-3 py-2">菜系</Text>
+        <ScrollView scrollY style={{ width: 80, backgroundColor: '#fff', flexShrink: 0 }}>
+          <View style={{ paddingTop: 8, paddingBottom: 8 }}>
+            <Text style={{ fontSize: 11, fontWeight: '600', color: '#6b7280', paddingLeft: 12, paddingTop: 8, paddingBottom: 8 }}>菜系</Text>
             {CUISINE_TYPES.map((item) => (
               <View
                 key={item.key}
                 onClick={() => setSelectedCuisine(item.key)}
-                className={`px-3 py-3 ${
-                  selectedCuisine === item.key
-                    ? 'bg-orange-50 border-l-2 border-orange-500'
-                    : 'border-l-2 border-transparent'
-                }`}
+                style={{
+                  paddingLeft: 12,
+                  paddingRight: 12,
+                  paddingTop: 12,
+                  paddingBottom: 12,
+                  backgroundColor: selectedCuisine === item.key ? '#fff7ed' : '#fff',
+                  borderLeftWidth: 2,
+                  borderLeftColor: selectedCuisine === item.key ? '#f97316' : 'transparent',
+                  borderLeftStyle: 'solid'
+                }}
               >
                 <Text
-                  className={`block text-sm ${
-                    selectedCuisine === item.key
-                      ? 'text-orange-600 font-semibold'
-                      : 'text-gray-700'
-                  }`}
+                  style={{
+                    fontSize: 13,
+                    color: selectedCuisine === item.key ? '#ea580c' : '#374151',
+                    fontWeight: selectedCuisine === item.key ? '600' : '400'
+                  }}
                 >
                   {item.label}
                 </Text>
               </View>
             ))}
 
-            <Text className="block text-xs font-semibold text-gray-500 px-3 py-2 mt-4">烹饪方式</Text>
+            <Text style={{ fontSize: 11, fontWeight: '600', color: '#6b7280', paddingLeft: 12, paddingTop: 16, paddingBottom: 8 }}>烹饪方式</Text>
             {COOKING_METHODS.map((item) => (
               <View
                 key={item.key}
                 onClick={() => setSelectedMethod(item.key)}
-                className={`px-3 py-3 ${
-                  selectedMethod === item.key
-                    ? 'bg-orange-50 border-l-2 border-orange-500'
-                    : 'border-l-2 border-transparent'
-                }`}
+                style={{
+                  paddingLeft: 12,
+                  paddingRight: 12,
+                  paddingTop: 12,
+                  paddingBottom: 12,
+                  backgroundColor: selectedMethod === item.key ? '#fff7ed' : '#fff',
+                  borderLeftWidth: 2,
+                  borderLeftColor: selectedMethod === item.key ? '#f97316' : 'transparent',
+                  borderLeftStyle: 'solid'
+                }}
               >
                 <Text
-                  className={`block text-sm ${
-                    selectedMethod === item.key
-                      ? 'text-orange-600 font-semibold'
-                      : 'text-gray-700'
-                  }`}
+                  style={{
+                    fontSize: 13,
+                    color: selectedMethod === item.key ? '#ea580c' : '#374151',
+                    fontWeight: selectedMethod === item.key ? '600' : '400'
+                  }}
                 >
                   {item.label}
                 </Text>
@@ -285,74 +284,79 @@ const MenuPage = () => {
         </ScrollView>
 
         {/* 右侧菜品列表 */}
-        <ScrollView scrollY className="flex-1 p-3">
+        <ScrollView scrollY style={{ flex: 1, padding: 12, boxSizing: 'border-box' }}>
           {loading ? (
-            <View className="flex flex-col items-center justify-center py-12">
-              <Text className="text-base text-gray-500">加载中...</Text>
+            <View style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: 48 }}>
+              <Text style={{ fontSize: 14, color: '#6b7280' }}>加载中...</Text>
             </View>
           ) : filteredDishes.length === 0 ? (
-            <View className="flex flex-col items-center justify-center py-12">
-              <View className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                <Text className="text-3xl">🍽️</Text>
+            <View style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: 48 }}>
+              <View style={{ width: 64, height: 64, backgroundColor: '#f3f4f6', borderRadius: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                <Text style={{ fontSize: 28 }}>🍽️</Text>
               </View>
-              <Text className="block text-base text-gray-500">暂无菜品</Text>
+              <Text style={{ fontSize: 14, color: '#6b7280' }}>暂无菜品</Text>
             </View>
           ) : (
-            <View className="space-y-3">
+            <View>
               {filteredDishes.map((dish) => {
                 const quantity = getCartQuantity(dish.id)
                 return (
                   <View
                     key={dish.id}
-                    className="bg-white rounded-xl shadow-sm p-3"
+                    style={{ 
+                      backgroundColor: '#fff', 
+                      borderRadius: 12, 
+                      padding: 12, 
+                      marginBottom: 12,
+                      boxSizing: 'border-box'
+                    }}
                     onClick={() => handleDishClick(dish.id)}
                   >
-                    <View className="flex flex-row gap-3">
-                      <View className="w-20 h-20 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center">
+                    <View style={{ display: 'flex', flexDirection: 'row', gap: 12 }}>
+                      <View style={{ width: 80, height: 80, backgroundColor: '#f3f4f6', borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                         {dish.image ? (
                           <Image
                             src={dish.image}
-                            className="w-full h-full rounded-lg"
+                            style={{ width: '100%', height: '100%', borderRadius: 8 }}
                             mode="aspectFill"
                           />
                         ) : (
-                          <Text className="text-3xl">🍜</Text>
+                          <Text style={{ fontSize: 28 }}>🍜</Text>
                         )}
                       </View>
-                      <View className="flex-1 flex flex-col justify-between">
+                      <View style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minWidth: 0 }}>
                         <View>
-                          <View className="flex items-center gap-2 mb-1">
-                            <Text className="block text-base font-semibold text-gray-900">
+                          <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                            <Text style={{ fontSize: 15, fontWeight: '600', color: '#111827' }} numberOfLines={1}>
                               {dish.name}
                             </Text>
                             {dish.is_new && (
-                              <View className="bg-orange-500 text-white px-2 py-0.5 rounded text-xs">
-                                <Text className="text-xs">新品</Text>
+                              <View style={{ backgroundColor: '#f97316', paddingLeft: 6, paddingRight: 6, paddingTop: 2, paddingBottom: 2, borderRadius: 4 }}>
+                                <Text style={{ fontSize: 11, color: '#fff' }}>新品</Text>
                               </View>
                             )}
                           </View>
                           {dish.description && (
-                            <Text className="block text-sm text-gray-500 truncate">
+                            <Text style={{ fontSize: 12, color: '#6b7280' }} numberOfLines={1}>
                               {dish.description}
                             </Text>
                           )}
-                          <View className="flex items-center gap-2 mt-1">
+                          <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
                             {dish.spiciness && dish.spiciness !== 'none' && (
-                              <Text className="text-xs text-red-500">
+                              <Text style={{ fontSize: 11, color: '#ef4444' }}>
                                 🌶️ {getSpicinessLabel(dish.spiciness)}
                               </Text>
                             )}
                           </View>
                         </View>
-                        <View className="flex justify-between items-center">
-                          <Text className="text-lg font-bold text-orange-500">
+                        <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Text style={{ fontSize: 16, fontWeight: '700', color: '#f97316' }}>
                             ¥{dish.price}
                           </Text>
                           
                           {/* 数量控制区域 */}
                           {quantity > 0 ? (
                             <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                              {/* 减号按钮 */}
                               <View
                                 hoverClass="opacity-70"
                                 onClick={(e) => handleRemoveFromCart(dish, e)}
@@ -361,7 +365,9 @@ const MenuPage = () => {
                                   height: 28,
                                   borderRadius: 14,
                                   backgroundColor: '#fff7ed',
-                                  border: '1px solid #f97316',
+                                  borderWidth: 1,
+                                  borderColor: '#f97316',
+                                  borderStyle: 'solid',
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center'
@@ -369,11 +375,9 @@ const MenuPage = () => {
                               >
                                 <Text style={{ color: '#f97316', fontSize: 16, fontWeight: '600' }}>-</Text>
                               </View>
-                              {/* 数量 */}
-                              <Text style={{ fontSize: 14, fontWeight: '600', color: '#374151', minWidth: 20, textAlign: 'center' }}>
+                              <Text style={{ fontSize: 14, fontWeight: '600', color: '#374151', width: 24, textAlign: 'center' }}>
                                 {quantity}
                               </Text>
-                              {/* 加号按钮 */}
                               <View
                                 hoverClass="opacity-70"
                                 onClick={(e) => handleAddToCart(dish, e)}
@@ -430,7 +434,7 @@ const MenuPage = () => {
             right: 0,
             backgroundColor: '#fff',
             borderTopWidth: 1,
-            borderTopColor: '#e5e5e5',
+            borderTopColor: '#e5e7eb',
             borderTopStyle: 'solid',
             padding: 10,
             paddingLeft: 16,
@@ -439,7 +443,8 @@ const MenuPage = () => {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-            zIndex: 100
+            zIndex: 100,
+            boxSizing: 'border-box'
           }}
         >
           <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>

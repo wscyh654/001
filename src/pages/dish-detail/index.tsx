@@ -103,7 +103,6 @@ const DishDetailPage = () => {
   const handleAddToCart = () => {
     if (!dish) return
     
-    // 检查必选规格
     if (dish.specifications && Array.isArray(dish.specifications)) {
       for (const spec of dish.specifications) {
         if (spec.isRequired && !selectedSpecs[spec.name]) {
@@ -162,16 +161,16 @@ const DishDetailPage = () => {
 
   if (loading) {
     return (
-      <View className="flex flex-col items-center justify-center h-full">
-        <Text className="text-base text-gray-500">加载中...</Text>
+      <View style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+        <Text style={{ fontSize: 14, color: '#6b7280' }}>加载中...</Text>
       </View>
     )
   }
 
   if (!dish) {
     return (
-      <View className="flex flex-col items-center justify-center h-full">
-        <Text className="text-base text-gray-500">菜品不存在</Text>
+      <View style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+        <Text style={{ fontSize: 14, color: '#6b7280' }}>菜品不存在</Text>
       </View>
     )
   }
@@ -181,44 +180,44 @@ const DishDetailPage = () => {
   const hasSpecifications = dish.specifications && Array.isArray(dish.specifications) && dish.specifications.length > 0
 
   return (
-    <View className="flex flex-col h-full bg-gray-50">
-      <ScrollView scrollY className="flex-1">
+    <View style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#f9fafb', overflow: 'hidden' }}>
+      <ScrollView scrollY style={{ flex: 1 }}>
         {/* 菜品图片 */}
-        <View className="w-full h-64 bg-gray-100">
+        <View style={{ width: '100%', height: 256, backgroundColor: '#f3f4f6', overflow: 'hidden' }}>
           {dish.image ? (
             <Image
               src={dish.image}
-              className="w-full h-full"
+              style={{ width: '100%', height: '100%' }}
               mode="aspectFill"
             />
           ) : (
-            <View className="w-full h-full flex items-center justify-center">
-              <Text className="text-6xl">🍜</Text>
+            <View style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ fontSize: 64 }}>🍜</Text>
             </View>
           )}
         </View>
 
         {/* 基本信息 */}
-        <View className="bg-white p-4 mb-2">
-          <View className="flex items-center gap-2 mb-2">
-            <Text className="text-xl font-bold text-gray-900">{dish.name}</Text>
+        <View style={{ backgroundColor: '#fff', padding: 16, marginBottom: 8, boxSizing: 'border-box' }}>
+          <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <Text style={{ fontSize: 20, fontWeight: '700', color: '#111827' }} numberOfLines={1}>{dish.name}</Text>
             {dish.cuisine_type && (
-              <View className="bg-orange-100 px-2 py-0.5 rounded">
-                <Text className="text-xs text-orange-600">{dish.cuisine_type}</Text>
+              <View style={{ backgroundColor: '#fff7ed', paddingLeft: 8, paddingRight: 8, paddingTop: 2, paddingBottom: 2, borderRadius: 4 }}>
+                <Text style={{ fontSize: 11, color: '#ea580c' }}>{dish.cuisine_type}</Text>
               </View>
             )}
           </View>
-          <Text className="text-2xl font-bold text-orange-500">¥{dish.price}</Text>
+          <Text style={{ fontSize: 24, fontWeight: '700', color: '#f97316' }}>¥{dish.price}</Text>
           {dish.description && (
-            <Text className="text-sm text-gray-600 leading-relaxed mt-3">{dish.description}</Text>
+            <Text style={{ fontSize: 13, color: '#4b5563', lineHeight: 20, marginTop: 12 }}>{dish.description}</Text>
           )}
         </View>
 
-        {/* 规格选择 - 使用更简单直接的方式 */}
+        {/* 规格选择 */}
         {hasSpecifications && dish.specifications!.map((spec, specIndex) => (
-          <View key={`spec-${specIndex}`} className="bg-white p-4 mb-2">
-            <Text className="text-base font-semibold text-gray-900 mb-3">{spec.name}</Text>
-            <View className="flex flex-wrap gap-3">
+          <View key={`spec-${specIndex}`} style={{ backgroundColor: '#fff', padding: 16, marginBottom: 8, boxSizing: 'border-box' }}>
+            <Text style={{ fontSize: 15, fontWeight: '600', color: '#111827', marginBottom: 12 }}>{spec.name}</Text>
+            <View style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
               {spec.options.map((option, optIndex) => {
                 const isSelected = selectedSpecs[spec.name] === option.name
                 return (
@@ -226,7 +225,10 @@ const DishDetailPage = () => {
                     key={`opt-${optIndex}`}
                     hoverClass="bg-gray-100"
                     style={{
-                      padding: '8px 16px',
+                      paddingLeft: 16,
+                      paddingRight: 16,
+                      paddingTop: 8,
+                      paddingBottom: 8,
                       borderRadius: 8,
                       borderWidth: 2,
                       borderStyle: 'solid',
@@ -234,7 +236,6 @@ const DishDetailPage = () => {
                       backgroundColor: isSelected ? '#fff7ed' : '#fff'
                     }}
                     onClick={() => {
-                      console.log('点击规格:', spec.name, option.name)
                       setSelectedSpecs({
                         ...selectedSpecs,
                         [spec.name]: option.name
@@ -258,9 +259,9 @@ const DishDetailPage = () => {
 
         {/* 辣度选择 */}
         {dish.spiciness && (
-          <View className="bg-white p-4 mb-2">
-            <Text className="text-base font-semibold text-gray-900 mb-3">辣度</Text>
-            <View className="flex flex-wrap gap-3">
+          <View style={{ backgroundColor: '#fff', padding: 16, marginBottom: 8, boxSizing: 'border-box' }}>
+            <Text style={{ fontSize: 15, fontWeight: '600', color: '#111827', marginBottom: 12 }}>辣度</Text>
+            <View style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
               {spicinessOptions.map((option, idx) => {
                 const isSelected = selectedSpiciness === option.value
                 return (
@@ -268,17 +269,17 @@ const DishDetailPage = () => {
                     key={`spice-${idx}`}
                     hoverClass="bg-gray-100"
                     style={{
-                      padding: '8px 16px',
+                      paddingLeft: 16,
+                      paddingRight: 16,
+                      paddingTop: 8,
+                      paddingBottom: 8,
                       borderRadius: 8,
                       borderWidth: 2,
                       borderStyle: 'solid',
                       borderColor: isSelected ? '#f97316' : '#e5e7eb',
                       backgroundColor: isSelected ? '#fff7ed' : '#fff'
                     }}
-                    onClick={() => {
-                      console.log('点击辣度:', option.value)
-                      setSelectedSpiciness(option.value)
-                    }}
+                    onClick={() => setSelectedSpiciness(option.value)}
                   >
                     <Text style={{
                       fontSize: 14,
@@ -297,9 +298,9 @@ const DishDetailPage = () => {
 
         {/* 温度选择 */}
         {dish.temperature && (
-          <View className="bg-white p-4 mb-2">
-            <Text className="text-base font-semibold text-gray-900 mb-3">温度</Text>
-            <View className="flex flex-wrap gap-3">
+          <View style={{ backgroundColor: '#fff', padding: 16, marginBottom: 8, boxSizing: 'border-box' }}>
+            <Text style={{ fontSize: 15, fontWeight: '600', color: '#111827', marginBottom: 12 }}>温度</Text>
+            <View style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
               {temperatureOptions.map((option, idx) => {
                 const isSelected = selectedTemperature === option.value
                 return (
@@ -307,17 +308,17 @@ const DishDetailPage = () => {
                     key={`temp-${idx}`}
                     hoverClass="bg-gray-100"
                     style={{
-                      padding: '8px 16px',
+                      paddingLeft: 16,
+                      paddingRight: 16,
+                      paddingTop: 8,
+                      paddingBottom: 8,
                       borderRadius: 8,
                       borderWidth: 2,
                       borderStyle: 'solid',
                       borderColor: isSelected ? '#f97316' : '#e5e7eb',
                       backgroundColor: isSelected ? '#fff7ed' : '#fff'
                     }}
-                    onClick={() => {
-                      console.log('点击温度:', option.value)
-                      setSelectedTemperature(option.value)
-                    }}
+                    onClick={() => setSelectedTemperature(option.value)}
                   >
                     <Text style={{
                       fontSize: 14,
@@ -335,17 +336,17 @@ const DishDetailPage = () => {
         )}
 
         {/* 数量选择 */}
-        <View className="bg-white p-4 mb-2">
-          <View className="flex items-center justify-between">
-            <Text className="text-base font-semibold text-gray-900">数量</Text>
-            <View className="flex items-center gap-4">
+        <View style={{ backgroundColor: '#fff', padding: 16, marginBottom: 8, boxSizing: 'border-box' }}>
+          <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text style={{ fontSize: 15, fontWeight: '600', color: '#111827' }}>数量</Text>
+            <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 16 }}>
               <View
-                hoverClass="bg-gray-200"
+                hoverClass="opacity-70"
                 style={{
                   width: 32,
                   height: 32,
                   borderRadius: 16,
-                  backgroundColor: quantity > 1 ? '#ffedd5' : '#f3f4f6',
+                  backgroundColor: quantity > 1 ? '#fff7ed' : '#f3f4f6',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
@@ -356,14 +357,14 @@ const DishDetailPage = () => {
               >
                 <Text style={{ color: quantity > 1 ? '#ea580c' : '#9ca3af', fontSize: 18 }}>-</Text>
               </View>
-              <Text className="text-lg font-semibold text-gray-900">{quantity}</Text>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827' }}>{quantity}</Text>
               <View
-                hoverClass="bg-gray-200"
+                hoverClass="opacity-70"
                 style={{
                   width: 32,
                   height: 32,
                   borderRadius: 16,
-                  backgroundColor: '#ffedd5',
+                  backgroundColor: '#fff7ed',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
@@ -388,22 +389,26 @@ const DishDetailPage = () => {
           right: 0,
           backgroundColor: '#fff',
           borderTopWidth: 1,
-          borderTopColor: '#e5e5e5',
+          borderTopColor: '#e5e7eb',
+          borderTopStyle: 'solid',
           padding: 12,
-          zIndex: 100
+          paddingLeft: 16,
+          paddingRight: 16,
+          zIndex: 100,
+          boxSizing: 'border-box'
         }}
       >
         <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <View>
-            <Text className="text-sm text-gray-500">合计</Text>
-            <Text className="text-2xl font-bold text-orange-500">¥{calculateTotalPrice()}</Text>
+            <Text style={{ fontSize: 12, color: '#6b7280' }}>合计</Text>
+            <Text style={{ fontSize: 22, fontWeight: '700', color: '#f97316' }}>¥{calculateTotalPrice()}</Text>
           </View>
           <View
             hoverClass="opacity-80"
             style={{ backgroundColor: '#f97316', borderRadius: 8, paddingTop: 12, paddingBottom: 12, paddingLeft: 32, paddingRight: 32 }}
             onClick={handleAddToCart}
           >
-            <Text style={{ color: '#fff', fontWeight: '600', textAlign: 'center' }}>加入购物车</Text>
+            <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>加入购物车</Text>
           </View>
         </View>
       </View>
@@ -431,14 +436,16 @@ const DishDetailPage = () => {
               padding: 20,
               marginLeft: 20,
               marginRight: 20,
-              width: '85%'
+              width: '85%',
+              maxWidth: 320,
+              boxSizing: 'border-box'
             }}
           >
-            <Text style={{ fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginBottom: 16 }}>添加留言</Text>
-            <Text style={{ fontSize: 14, color: '#666', marginBottom: 12 }}>有什么特殊要求可以告诉我们（选填）</Text>
+            <Text style={{ fontSize: 18, fontWeight: '700', textAlign: 'center', marginBottom: 16, color: '#111827' }}>添加留言</Text>
+            <Text style={{ fontSize: 13, color: '#6b7280', marginBottom: 12 }}>有什么特殊要求可以告诉我们（选填）</Text>
             <View style={{ backgroundColor: '#f5f5f5', borderRadius: 8, padding: 12, marginBottom: 16 }}>
               <Input
-                style={{ width: '100%', minHeight: 60 }}
+                style={{ width: '100%', minHeight: 60, fontSize: 14 }}
                 placeholder="例如：少放辣椒、多加葱..."
                 value={note}
                 onInput={(e) => setNote(e.detail.value)}
@@ -447,18 +454,18 @@ const DishDetailPage = () => {
             </View>
             <View style={{ display: 'flex', flexDirection: 'row', gap: 12 }}>
               <View 
-                hoverClass="bg-gray-200"
-                style={{ flex: 1, backgroundColor: '#f5f5f5', borderRadius: 8, padding: 12 }}
+                hoverClass="opacity-70"
+                style={{ flex: 1, backgroundColor: '#f5f5f5', borderRadius: 8, paddingTop: 12, paddingBottom: 12 }}
                 onClick={handleSkipNote}
               >
-                <Text style={{ textAlign: 'center', color: '#666' }}>跳过</Text>
+                <Text style={{ textAlign: 'center', color: '#6b7280', fontSize: 14 }}>跳过</Text>
               </View>
               <View 
                 hoverClass="opacity-80"
-                style={{ flex: 1, backgroundColor: '#f97316', borderRadius: 8, padding: 12 }}
+                style={{ flex: 1, backgroundColor: '#f97316', borderRadius: 8, paddingTop: 12, paddingBottom: 12 }}
                 onClick={handleConfirmNote}
               >
-                <Text style={{ textAlign: 'center', color: '#fff', fontWeight: '600' }}>确认</Text>
+                <Text style={{ textAlign: 'center', color: '#fff', fontWeight: '600', fontSize: 14 }}>确认</Text>
               </View>
             </View>
           </View>
